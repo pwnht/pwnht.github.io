@@ -51,20 +51,20 @@
   };
 </script>
 
-  <meta name="description" content="test">
-<meta name="keywords" content="test">
+  <meta name="description" content="这里总结一下，一些虚拟化逃逸的攻击面">
+<meta name="keywords" content="ctf,reallyworld">
 <meta property="og:type" content="article">
-<meta property="og:title" content="test">
-<meta property="og:url" content="http://yoursite.com/2019/11/05/test/index.html">
+<meta property="og:title" content="&#39;逃逸初探&#39;">
+<meta property="og:url" content="http://yoursite.com/2019/10/24/逃逸初探/index.html">
 <meta property="og:site_name" content="blog">
-<meta property="og:description" content="test">
+<meta property="og:description" content="这里总结一下，一些虚拟化逃逸的攻击面">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-05T14:31:38.978Z">
+<meta property="og:updated_time" content="2019-11-16T03:37:32.893Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="test">
-<meta name="twitter:description" content="test">
+<meta name="twitter:title" content="&#39;逃逸初探&#39;">
+<meta name="twitter:description" content="这里总结一下，一些虚拟化逃逸的攻击面">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/05/test/">
+<link rel="canonical" href="http://yoursite.com/2019/10/24/逃逸初探/">
 
 
 <script id="page-configurations">
@@ -78,7 +78,7 @@
   };
 </script>
 
-  <title>test | blog</title>
+  <title>'逃逸初探' | blog</title>
   
 
 
@@ -187,7 +187,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/05/test/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/24/逃逸初探/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/header.jpg">
@@ -200,7 +200,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          test
+          '逃逸初探'
         </h1>
 
         <div class="post-meta">
@@ -209,12 +209,19 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2019-11-05 22:31:08 / 修改时间：22:31:38" itemprop="dateCreated datePublished" datetime="2019-11-05T22:31:08+08:00">2019-11-05</time>
+              <time title="创建时间：2019-10-24 23:27:32" itemprop="dateCreated datePublished" datetime="2019-10-24T23:27:32+08:00">2019-10-24</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-11-16 11:37:32" itemprop="dateModified" datetime="2019-11-16T11:37:32+08:00">2019-11-16</time>
+              </span>
 
           
+            <div class="post-description">这里总结一下，一些虚拟化逃逸的攻击面</div>
 
         </div>
       </header>
@@ -225,7 +232,32 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="test"><a href="#test" class="headerlink" title="test"></a>test</h3>
+        <h1 id="0x00-docker"><a href="#0x00-docker" class="headerlink" title="0x00 docker"></a>0x00 docker</h1><p>docker在特权模式下（<del>这也不算是逃逸吧</del>），可以挂载宿主机的根目录，从而可以读写宿主机的任意文件</p>
+<p>我知道的有两种攻击方式：</p>
+<ul>
+<li>写入contab文件，contab文件位于 <strong>/var/spool/cron/</strong> 下（<del>通过<em> </em> <em> </em> * export DISPLAY=:0.0 &amp;&amp; /usr/bin/xcalc就可以愉快的弹出计算器了，你只需要等一分钟</del>）</li>
+<li>利用宿主机已有的漏洞，进行攻击</li>
+</ul>
+<h2 id="待补（其他利用方式）"><a href="#待补（其他利用方式）" class="headerlink" title="待补（其他利用方式）"></a>待补（<del>其他利用方式</del>）</h2><h1 id="0x01-qemu"><a href="#0x01-qemu" class="headerlink" title="0x01 qemu"></a>0x01 qemu</h1><h2 id="0x00-pci设备攻击面"><a href="#0x00-pci设备攻击面" class="headerlink" title="0x00 pci设备攻击面"></a>0x00 pci设备攻击面</h2><p>qemu有一个比较有意思的攻击面，就是pci设备，qemu会把guest机的pci设备的资源文件映射到堆上，来模拟文件，如果对pci设备操作的函数 <strong>mmio_read</strong> 和 <strong>mmio_write</strong> 实现不正确，就可能会有堆溢出或者信息泄露的情况出现</p>
+<h2 id="0x01-linux-pci设备介绍"><a href="#0x01-linux-pci设备介绍" class="headerlink" title="0x01 linux pci设备介绍"></a>0x01 linux pci设备介绍</h2><p>参考博客:</p>
+<ul>
+<li><a href="https://www.cnblogs.com/yuanfang/archive/2010/12/23/1914905.html" target="_blank" rel="noopener">https://www.cnblogs.com/yuanfang/archive/2010/12/23/1914905.html</a></li>
+</ul>
+<p>就不搬运了，对于pci设备，我们需要识别哪一个是我们的想要的pci设备，我们可以利用hexdump，查看 <strong>/sys/devices/pci0000:00/</strong> 文件下各个文件的config文件，对应注册的设备的号码和厂商号码来辨认设备</p>
+<h3 id="0x00-mmio访问pci设备"><a href="#0x00-mmio访问pci设备" class="headerlink" title="0x00 mmio访问pci设备"></a>0x00 mmio访问pci设备</h3><p>之后可以通过mmap的方式来操作resource文件，通过对mmap内存的读写来读写resource文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int fd = open(&quot;/sys/devices/pci0000:00/0000:00:04.0/resource0&quot;, O_RDWR | O_SYNC);</span><br><span class="line">base = mmap(0, 0x1000000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br></pre></td></tr></table></figure>
+<h3 id="0x01-编程访问PMIO"><a href="#0x01-编程访问PMIO" class="headerlink" title="0x01 编程访问PMIO"></a>0x01 编程访问PMIO</h3><ul>
+<li><a href="https://xz.aliyun.com/t/6618" target="_blank" rel="noopener">https://xz.aliyun.com/t/6618</a></li>
+</ul>
+<h3 id="0x02-PMIO和MMIO的区别"><a href="#0x02-PMIO和MMIO的区别" class="headerlink" title="0x02 PMIO和MMIO的区别"></a>0x02 PMIO和MMIO的区别</h3><ul>
+<li><a href="https://www.cnblogs.com/idorax/p/7691334.html" target="_blank" rel="noopener">https://www.cnblogs.com/idorax/p/7691334.html</a></li>
+</ul>
+<h2 id="待补（源码分析）"><a href="#待补（源码分析）" class="headerlink" title="待补（源码分析）"></a>待补（<del>源码分析</del>）</h2><h1 id="0x02-vmware"><a href="#0x02-vmware" class="headerlink" title="0x02 vmware"></a>0x02 vmware</h1><p>参考博客：</p>
+<ul>
+<li><a href="https://www.jishuwen.com/d/2YL7" target="_blank" rel="noopener">https://www.jishuwen.com/d/2YL7</a><br>vmware有一个比较有意思的攻击面，backdoor攻击面，backdoor是host和guest的一种通讯方式，我们可以发送RPCI指令,来触发漏洞<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">info-set guest.a payload</span><br><span class="line">info-get guest.a</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="待补（vmware-vmx逆向分析）"><a href="#待补（vmware-vmx逆向分析）" class="headerlink" title="待补（vmware-vmx逆向分析）"></a>待补（<del>vmware-vmx逆向分析</del>）</h2>
     </div>
 
     
@@ -234,21 +266,24 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/test/" rel="tag"># test</a>
+              <a href="/tags/ctf-reallyworld/" rel="tag"># ctf,reallyworld</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
-                <a href="/2019/11/05/2019冬季赛第一周习题练习总结/" rel="next" title="2019冬季赛第一周习题练习总结">
-                  <i class="fa fa-chevron-left"></i> 2019冬季赛第一周习题练习总结
+                <a href="/2019/10/24/chrome编译/" rel="next" title="'chrome编译'">
+                  <i class="fa fa-chevron-left"></i> 'chrome编译'
                 </a>
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
+                <a href="/2019/10/25/打造自己ide-vim/" rel="prev" title="'打造自己ide-vim'">
+                  '打造自己ide-vim' <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
       </footer>
@@ -288,7 +323,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#test"><span class="nav-number">1.</span> <span class="nav-text">test</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-docker"><span class="nav-number">1.</span> <span class="nav-text">0x00 docker</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#待补（其他利用方式）"><span class="nav-number">1.1.</span> <span class="nav-text">待补（其他利用方式）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-qemu"><span class="nav-number">2.</span> <span class="nav-text">0x01 qemu</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-pci设备攻击面"><span class="nav-number">2.1.</span> <span class="nav-text">0x00 pci设备攻击面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-linux-pci设备介绍"><span class="nav-number">2.2.</span> <span class="nav-text">0x01 linux pci设备介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-mmio访问pci设备"><span class="nav-number">2.2.1.</span> <span class="nav-text">0x00 mmio访问pci设备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-编程访问PMIO"><span class="nav-number">2.2.2.</span> <span class="nav-text">0x01 编程访问PMIO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-PMIO和MMIO的区别"><span class="nav-number">2.2.3.</span> <span class="nav-text">0x02 PMIO和MMIO的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#待补（源码分析）"><span class="nav-number">2.3.</span> <span class="nav-text">待补（源码分析）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-vmware"><span class="nav-number">3.</span> <span class="nav-text">0x02 vmware</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#待补（vmware-vmx逆向分析）"><span class="nav-number">3.1.</span> <span class="nav-text">待补（vmware-vmx逆向分析）</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -304,14 +339,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">46</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -437,7 +472,7 @@
       repo: 'gitalk-commnet',
       owner: 'pwnht',
       admin: ['pwnht'],
-      id: 'bd0372a7f6302223d1c5a02da4c4803b',
+      id: '94d09cbb1153f60122985c5383c09ddc',
         language: 'zh-CN',
       distractionFreeMode: 'false'
     });
