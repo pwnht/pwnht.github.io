@@ -51,20 +51,15 @@
   };
 </script>
 
-  <meta name="description" content="这里总结整数溢出的一个题目，主要对漏洞挖掘的一个思维漏洞">
-<meta name="keywords" content="pwn">
-<meta property="og:type" content="article">
-<meta property="og:title" content="整数溢出思考">
-<meta property="og:url" content="http://yoursite.com/2019/11/03/整数溢出思考/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="blog">
+<meta property="og:url" content="http://yoursite.com/tags/kernel-android/index.html">
 <meta property="og:site_name" content="blog">
-<meta property="og:description" content="这里总结整数溢出的一个题目，主要对漏洞挖掘的一个思维漏洞">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-25T04:48:33.180Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="整数溢出思考">
-<meta name="twitter:description" content="这里总结整数溢出的一个题目，主要对漏洞挖掘的一个思维漏洞">
+<meta name="twitter:title" content="blog">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/03/整数溢出思考/">
+<link rel="canonical" href="http://yoursite.com/tags/kernel-android/">
 
 
 <script id="page-configurations">
@@ -72,13 +67,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: true,
+    isPost: false,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>整数溢出思考 | blog</title>
+  <title>标签: kernel,android | blog</title>
   
 
 
@@ -182,113 +177,54 @@
           <div class="content">
             
 
-  <div class="posts-expand">
-      
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/03/整数溢出思考/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/header.jpg">
-      <meta itemprop="name" content="PwnHt">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          整数溢出思考
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        <h1 class="collection-header">kernel,android
+          <small>标签</small>
         </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-03 09:17:48" itemprop="dateCreated datePublished" datetime="2019-11-03T09:17:48+08:00">2019-11-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-25 12:48:33" itemprop="dateModified" datetime="2019-11-25T12:48:33+08:00">2019-11-25</time>
-              </span>
-
-          
-            <div class="post-description">这里总结整数溢出的一个题目，主要对漏洞挖掘的一个思维漏洞</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+      </div>
 
       
-        <h2 id="0x00-漏洞点"><a href="#0x00-漏洞点" class="headerlink" title="0x00 漏洞点"></a>0x00 漏洞点</h2><p>这个题目是一个常规堆题目，其他地方没有发现漏洞点，看到abs()函数，就可以想到可能会有整数溢出，有意思的是，abs（）函数是通过汇编实现的，并不是glibc库abs()函数，该函数有两种实现方式，第一种方式使用了3次，第二种方式用了一次，下面分析一下这两种实现方式</p>
-<h2 id="0x01-第一种汇编语言实现方式"><a href="#0x01-第一种汇编语言实现方式" class="headerlink" title="0x01 第一种汇编语言实现方式"></a>0x01 第一种汇编语言实现方式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000000F91                 mov     edx, eax</span><br><span class="line">.text:0000000000000F93                 mov     eax, edx</span><br><span class="line">.text:0000000000000F95                 sar     eax, 1Fh</span><br><span class="line">.text:0000000000000F98                 mov     ecx, edx</span><br><span class="line">.text:0000000000000F9A                 xor     ecx, eax</span><br><span class="line">.text:0000000000000F9C                 sub     ecx, eax</span><br></pre></td></tr></table></figure>
-<ul>
-<li>首先会通过一个函数将你输入的值放到eax</li>
-<li>然后把eax给edx</li>
-<li>eax的第31位右移31位，（<del>就是如果你eax第32位是1的话，结果，eax是全f，否则为0</del>）</li>
-<li>然后把edx给ecx</li>
-<li>ecx和eax异或</li>
-<li>ecx减eax</li>
-</ul>
-<p>总的来说，就是如果eax第31位为1的话，就会执行eax各位取反再加一，否则，eax不变</p>
-<p>那么这样的话，如何得到31位有符号的负数呢</p>
-<p>我可以想到0x80000000这个数，这个数十进制的话是-2147483648，各位取反就是0x7fffffff再加一 ，还是0x80000000而在有符号数里面，0x80000000仍然为一个负数，所以，发生了整数溢出，这也是abs()函数在libc库里面正常的实现方式</p>
-<h2 id="0x02-第二种汇编实现方式"><a href="#0x02-第二种汇编实现方式" class="headerlink" title="0x02 第二种汇编实现方式"></a>0x02 第二种汇编实现方式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000001042                 cdq</span><br><span class="line">.text:0000000000001043                 xor     eax, edx</span><br><span class="line">.text:0000000000001045                 sub     eax, edx</span><br></pre></td></tr></table></figure>
-<p>突然发现和第一种方式，殊途同归，操作的结果是一样的。。。。</p>
-
+    <div class="collection-year">
+      <h1 class="collection-header">2019</h1>
     </div>
 
-    
-    
-    
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
-      <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/pwn/" rel="tag"># pwn</a>
-          </div>
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2019-11-19T17:52:49+08:00"
+              content="2019-11-19">
+          11-19
+        </time>
+      </div>
 
-        
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2019/11/19/gdb远程调试android虚拟机的c程序/" itemprop="url">
+            <span itemprop="name">gdb远程调试android虚拟机的c程序</span>
+          </a>
+      </h2>
 
-          <div class="post-nav">
-            <div class="post-nav-next post-nav-item">
-                <a href="/2019/10/28/qira源码分析/" rel="next" title="qira源码分析">
-                  <i class="fa fa-chevron-left"></i> qira源码分析
-                </a>
-            </div>
-
-            <span class="post-nav-divider"></span>
-
-            <div class="post-nav-prev post-nav-item">
-                <a href="/2019/11/05/2019冬季赛第一周习题练习总结/" rel="prev" title="2019冬季赛第一周习题练习总结">
-                  2019冬季赛第一周习题练习总结 <i class="fa fa-chevron-right"></i>
-                </a>
-            </div>
-          </div>
-      </footer>
-    
+    </header>
   </article>
+
+    </div>
+  </div>
   
   
   
 
-  </div>
+  
+
 
 
           </div>
           
-    <div class="comments" id="gitalk-container"></div>
 
         </div>
           
@@ -313,7 +249,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-漏洞点"><span class="nav-number">1.</span> <span class="nav-text">0x00 漏洞点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-第一种汇编语言实现方式"><span class="nav-number">2.</span> <span class="nav-text">0x01 第一种汇编语言实现方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-第二种汇编实现方式"><span class="nav-number">3.</span> <span class="nav-text">0x02 第二种汇编实现方式</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -452,23 +387,6 @@
 
   
 
-<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
-
-<script>
-  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
-    var gitalk = new Gitalk({
-      clientID: '0c9c9c5050bd212943da',
-      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
-      repo: 'gitalk-commnet',
-      owner: 'pwnht',
-      admin: ['pwnht'],
-      id: 'c75dfa517ba4f9e971f1ceea2f41b65b',
-        language: 'zh-CN',
-      distractionFreeMode: 'false'
-    });
-    gitalk.render('gitalk-container');
-  }, window.Gitalk);
-</script>
 
 </body>
 </html>
