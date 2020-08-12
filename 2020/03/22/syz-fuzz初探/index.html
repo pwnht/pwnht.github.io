@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="尝试一下syzkaller fuzz">
+<meta name="keywords" content="kernel,fuzz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="syz fuzz初探">
+<meta property="og:url" content="http://yoursite.com/2020/03/22/syz-fuzz初探/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="尝试一下syzkaller fuzz">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2020/03/22/syz-fuzz初探/web.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/22/syz-fuzz初探/tty.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/22/syz-fuzz初探/kernel_patch.png">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="syz fuzz初探">
+<meta name="twitter:description" content="尝试一下syzkaller fuzz">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/22/syz-fuzz初探/web.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/22/syz-fuzz初探/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>syz fuzz初探 | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/22/syz-fuzz初探/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          syz fuzz初探
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-22 17:26:52" itemprop="dateCreated datePublished" datetime="2020-03-22T17:26:52+08:00">2020-03-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">尝试一下syzkaller fuzz</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="0x00-环境搭建"><a href="#0x00-环境搭建" class="headerlink" title="0x00 环境搭建"></a>0x00 环境搭建</h1><h2 id="0x00-编译syzkaller"><a href="#0x00-编译syzkaller" class="headerlink" title="0x00 编译syzkaller"></a>0x00 编译syzkaller</h2><h3 id="0x00-go-get-syzkaller"><a href="#0x00-go-get-syzkaller" class="headerlink" title="0x00 go get syzkaller"></a>0x00 go get syzkaller</h3><p>在ubuntu下没有搭建失败，在manjaro比较顺利,首先安装go</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S go</span><br></pre></td></tr></table></figure>
+<p>然后环境变量就自己配置好了，比较方便，然后,参考·<a href="https://www.freebuf.com/sectool/142969.html" target="_blank" rel="noopener">https://www.freebuf.com/sectool/142969.html</a></p>
+<p>这个链接进行设置，go默认get的路径应该在 <strong>/home/user/go</strong> ,之后按照链接make就好了</p>
+<h3 id="0x01-生成镜像"><a href="#0x01-生成镜像" class="headerlink" title="0x01 生成镜像"></a>0x01 生成镜像</h3><p>利用 <strong>syzkaller/tools/create-img.sh</strong> 生成镜像，由于官方镜像下载很慢，所以，考虑国内源，把create-img.sh的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo debootstrap --include=$PREINSTALL_PKGS --components=main,contrib,non-free $RELEASE $DIR</span><br></pre></td></tr></table></figure>
+<p>改成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo debootstrap --include=$PREINSTALL_PKGS --components=main,contrib,non-free $RELEASE $DIR http://mirrors.163.com/debian/</span><br></pre></td></tr></table></figure>
+<p>就会快很多</p>
+<h3 id="0x02-编译kernel"><a href="#0x02-编译kernel" class="headerlink" title="0x02 编译kernel"></a>0x02 编译kernel</h3><p>参考 <a href="https://github.com/google/syzkaller/blob/master/docs/linux/setup_ubuntu-host_qemu-vm_x86-64-kernel.md" target="_blank" rel="noopener">https://github.com/google/syzkaller/blob/master/docs/linux/setup_ubuntu-host_qemu-vm_x86-64-kernel.md</a></p>
+<p>注意一共要加6个编译选项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_KCOV=y</span><br><span class="line">CONFIG_DEBUG_INFO=y</span><br><span class="line">CONFIG_KASAN=y</span><br><span class="line">CONFIG_KASAN_INLINE=y</span><br><span class="line">CONFIG_CONFIGFS_FS=y</span><br><span class="line">CONFIG_SECURITYFS=y</span><br></pre></td></tr></table></figure>
+<p>然后我遇到的问题是fuzz的crash信息不显示在哪个c文件的第几行crash的，而我的队友却显示。。。。</p>
+<h1 id="0x01-开始fuzz"><a href="#0x01-开始fuzz" class="headerlink" title="0x01 开始fuzz"></a>0x01 开始fuzz</h1><p>我的运气比较好在fuzz一段时间之后，fuzz出了两个漏洞</p>
+<p><img src="/2020/03/22/syz-fuzz初探/web.png" alt=""></p>
+<p><img src="/2020/03/22/syz-fuzz初探/tty.png" alt=""></p>
+<p>虽然没有什么攻击性。。。。，就没想过交，又因为ghidra解析不了vmlinux，导致我分析很慢，各种问题。。。不是因为内存不够就是硬盘不足。。。。其中一个被今天修复了，其中 <strong>release_tty</strong> 那个漏洞今天被修复了</p>
+<p><img src="/2020/03/22/syz-fuzz初探/kernel_patch.png" alt=""></p>
+<h1 id="0x02-漏洞分析"><a href="#0x02-漏洞分析" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h1><p>我一开始是从我的dump文件分析的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br></pre></td><td class="code"><pre><span class="line">Syzkaller hit &apos;KASAN: use-after-free Write in release_tty&apos; bug.</span><br><span class="line"></span><br><span class="line">==================================================================</span><br><span class="line">BUG: KASAN: use-after-free in con_shutdown+0x7f/0x90</span><br><span class="line">Write of size 8 at addr ffff888065b12888 by task syz-executor532/328</span><br><span class="line"></span><br><span class="line">CPU: 1 PID: 328 Comm: syz-executor532 Not tainted 5.6.0-rc6+ #1</span><br><span class="line">Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS ?-20191223_100556-anatol 04/01/2014</span><br><span class="line">Call Trace:</span><br><span class="line"> dump_stack+0x95/0xce</span><br><span class="line"> print_address_description.constprop.0+0x16/0x200</span><br><span class="line"> __kasan_report.cold+0x37/0x77</span><br><span class="line"> kasan_report+0xe/0x20</span><br><span class="line"> con_shutdown+0x7f/0x90</span><br><span class="line"> release_tty+0xb6/0x440</span><br><span class="line"> tty_release_struct+0x35/0x50</span><br><span class="line"> tty_release+0xac6/0xdb0</span><br><span class="line"> __fput+0x26d/0x760</span><br><span class="line"> task_work_run+0x144/0x1c0</span><br><span class="line"> do_exit+0x975/0x2750</span><br><span class="line"> do_group_exit+0xee/0x310</span><br><span class="line"> __x64_sys_exit_group+0x3a/0x50</span><br><span class="line"> do_syscall_64+0x9c/0x390</span><br><span class="line"> entry_SYSCALL_64_after_hwframe+0x44/0xa9</span><br><span class="line">RIP: 0033:0x43ee26</span><br><span class="line">Code: Bad RIP value.</span><br><span class="line">RSP: 002b:00007ffc5c942448 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7</span><br><span class="line">RAX: ffffffffffffffda RBX: 00000000004b03b0 RCX: 000000000043ee26</span><br><span class="line">RDX: 0000000000000000 RSI: 000000000000003c RDI: 0000000000000000</span><br><span class="line">RBP: 0000000000000000 R08: 00000000000000e7 R09: ffffffffffffffc0</span><br><span class="line">R10: 0000000000000000 R11: 0000000000000246 R12: 00000000004b03b0</span><br><span class="line">R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000001</span><br><span class="line"></span><br><span class="line">Allocated by task 328:</span><br><span class="line"> save_stack+0x1b/0x80</span><br><span class="line"> __kasan_kmalloc.constprop.0+0xc2/0xd0</span><br><span class="line"> vc_allocate+0x1c0/0x690</span><br><span class="line"> con_install+0x4d/0x3e0</span><br><span class="line"> tty_init_dev+0xe9/0x420</span><br><span class="line"> tty_open+0x414/0xa70</span><br><span class="line"> chrdev_open+0x209/0x510</span><br><span class="line"> do_dentry_open+0x439/0x1010</span><br><span class="line"> path_openat+0x1182/0x45d0</span><br><span class="line"> do_filp_open+0x192/0x260</span><br><span class="line"> do_sys_openat2+0x3f5/0x5a0</span><br><span class="line"> do_sys_open+0xb2/0x120</span><br><span class="line"> do_syscall_64+0x9c/0x390</span><br><span class="line"> entry_SYSCALL_64_after_hwframe+0x44/0xa9</span><br><span class="line"></span><br><span class="line">Freed by task 330:</span><br><span class="line"> save_stack+0x1b/0x80</span><br><span class="line"> __kasan_slab_free+0x12c/0x170</span><br><span class="line"> kfree+0x8c/0x230</span><br><span class="line"> vt_disallocate_all+0x276/0x380</span><br><span class="line"> vt_ioctl+0x1219/0x2560</span><br><span class="line"> tty_ioctl+0x66f/0x1310</span><br><span class="line"> ksys_ioctl+0xe4/0x130</span><br><span class="line"> __x64_sys_ioctl+0x6f/0xb0</span><br><span class="line"> do_syscall_64+0x9c/0x390</span><br><span class="line"> entry_SYSCALL_64_after_hwframe+0x44/0xa9</span><br><span class="line"></span><br><span class="line">The buggy address belongs to the object at ffff888065b12800</span><br><span class="line"> which belongs to the cache kmalloc-1k of size 1024</span><br><span class="line">The buggy address is located 136 bytes inside of</span><br><span class="line"> 1024-byte region [ffff888065b12800, ffff888065b12c00)</span><br><span class="line">The buggy address belongs to the page:</span><br><span class="line">page:ffffea000196c400 refcount:1 mapcount:0 mapping:ffff88806cc01140 index:0x0 compound_mapcount: 0</span><br><span class="line">flags: 0x100000000010200(slab|head)</span><br><span class="line">raw: 0100000000010200 dead000000000100 dead000000000122 ffff88806cc01140</span><br><span class="line">raw: 0000000000000000 0000000080100010 00000001ffffffff 0000000000000000</span><br><span class="line">page dumped because: kasan: bad access detected</span><br><span class="line"></span><br><span class="line">Memory state around the buggy address:</span><br><span class="line"> ffff888065b12780: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc</span><br><span class="line"> ffff888065b12800: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb</span><br><span class="line">&gt;ffff888065b12880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb</span><br><span class="line">                      ^</span><br><span class="line"> ffff888065b12900: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb</span><br><span class="line"> ffff888065b12980: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb</span><br><span class="line">==================================================================</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Syzkaller reproducer:</span><br><span class="line"># &#123;Threaded:false Collide:false Repeat:true RepeatTimes:0 Procs:8 Sandbox: Fault:false FaultCall:-1 FaultNth:0 Leak:false NetInjection:false NetDevices:false NetReset:false Cgroups:false BinfmtMisc:false CloseFDs:false KCSAN:false DevlinkPCI:false UseTmpDir:false HandleSegv:false Repro:false Trace:false&#125;</span><br><span class="line">r0 = syz_open_dev$tty20(0xc, 0x4, 0x1)</span><br><span class="line">ioctl$VT_DISALLOCATE(r0, 0x5608)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">C reproducer:</span><br><span class="line">// autogenerated by syzkaller (https://github.com/google/syzkaller)</span><br><span class="line"></span><br><span class="line">#define _GNU_SOURCE </span><br><span class="line"></span><br><span class="line">#include &lt;dirent.h&gt;</span><br><span class="line">#include &lt;endian.h&gt;</span><br><span class="line">#include &lt;errno.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;signal.h&gt;</span><br><span class="line">#include &lt;stdarg.h&gt;</span><br><span class="line">#include &lt;stdbool.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;sys/prctl.h&gt;</span><br><span class="line">#include &lt;sys/stat.h&gt;</span><br><span class="line">#include &lt;sys/syscall.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/wait.h&gt;</span><br><span class="line">#include &lt;time.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">static unsigned long long procid;</span><br><span class="line"></span><br><span class="line">static void sleep_ms(uint64_t ms)</span><br><span class="line">&#123;</span><br><span class="line">	usleep(ms * 1000);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static uint64_t current_time_ms(void)</span><br><span class="line">&#123;</span><br><span class="line">	struct timespec ts;</span><br><span class="line">	if (clock_gettime(CLOCK_MONOTONIC, &amp;ts))</span><br><span class="line">	exit(1);</span><br><span class="line">	return (uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / 1000000;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static bool write_file(const char* file, const char* what, ...)</span><br><span class="line">&#123;</span><br><span class="line">	char buf[1024];</span><br><span class="line">	va_list args;</span><br><span class="line">	va_start(args, what);</span><br><span class="line">	vsnprintf(buf, sizeof(buf), what, args);</span><br><span class="line">	va_end(args);</span><br><span class="line">	buf[sizeof(buf) - 1] = 0;</span><br><span class="line">	int len = strlen(buf);</span><br><span class="line">	int fd = open(file, O_WRONLY | O_CLOEXEC);</span><br><span class="line">	if (fd == -1)</span><br><span class="line">		return false;</span><br><span class="line">	if (write(fd, buf, len) != len) &#123;</span><br><span class="line">		int err = errno;</span><br><span class="line">		close(fd);</span><br><span class="line">		errno = err;</span><br><span class="line">		return false;</span><br><span class="line">	&#125;</span><br><span class="line">	close(fd);</span><br><span class="line">	return true;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static long syz_open_dev(volatile long a0, volatile long a1, volatile long a2)</span><br><span class="line">&#123;</span><br><span class="line">	if (a0 == 0xc || a0 == 0xb) &#123;</span><br><span class="line">		char buf[128];</span><br><span class="line">		sprintf(buf, &quot;/dev/%s/%d:%d&quot;, a0 == 0xc ? &quot;char&quot; : &quot;block&quot;, (uint8_t)a1, (uint8_t)a2);</span><br><span class="line">		return open(buf, O_RDWR, 0);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		char buf[1024];</span><br><span class="line">		char* hash;</span><br><span class="line">strncpy(buf, (char*)a0, sizeof(buf) - 1);</span><br><span class="line">		buf[sizeof(buf) - 1] = 0;</span><br><span class="line">		while ((hash = strchr(buf, &apos;#&apos;))) &#123;</span><br><span class="line">			*hash = &apos;0&apos; + (char)(a1 % 10);</span><br><span class="line">			a1 /= 10;</span><br><span class="line">		&#125;</span><br><span class="line">		return open(buf, a2, 0);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void kill_and_wait(int pid, int* status)</span><br><span class="line">&#123;</span><br><span class="line">	kill(-pid, SIGKILL);</span><br><span class="line">	kill(pid, SIGKILL);</span><br><span class="line">	int i;</span><br><span class="line">	for (i = 0; i &lt; 100; i++) &#123;</span><br><span class="line">		if (waitpid(-1, status, WNOHANG | __WALL) == pid)</span><br><span class="line">			return;</span><br><span class="line">		usleep(1000);</span><br><span class="line">	&#125;</span><br><span class="line">	DIR* dir = opendir(&quot;/sys/fs/fuse/connections&quot;);</span><br><span class="line">	if (dir) &#123;</span><br><span class="line">		for (;;) &#123;</span><br><span class="line">			struct dirent* ent = readdir(dir);</span><br><span class="line">			if (!ent)</span><br><span class="line">				break;</span><br><span class="line">			if (strcmp(ent-&gt;d_name, &quot;.&quot;) == 0 || strcmp(ent-&gt;d_name, &quot;..&quot;) == 0)</span><br><span class="line">				continue;</span><br><span class="line">			char abort[300];</span><br><span class="line">			snprintf(abort, sizeof(abort), &quot;/sys/fs/fuse/connections/%s/abort&quot;, ent-&gt;d_name);</span><br><span class="line">			int fd = open(abort, O_WRONLY);</span><br><span class="line">			if (fd == -1) &#123;</span><br><span class="line">				continue;</span><br><span class="line">			&#125;</span><br><span class="line">			if (write(fd, abort, 1) &lt; 0) &#123;</span><br><span class="line">			&#125;</span><br><span class="line">			close(fd);</span><br><span class="line">		&#125;</span><br><span class="line">		closedir(dir);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	while (waitpid(-1, status, __WALL) != pid) &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void setup_test()</span><br><span class="line">&#123;</span><br><span class="line">	prctl(PR_SET_PDEATHSIG, SIGKILL, 0, 0, 0);</span><br><span class="line">	setpgrp();</span><br><span class="line">	write_file(&quot;/proc/self/oom_score_adj&quot;, &quot;1000&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void execute_one(void);</span><br><span class="line"></span><br><span class="line">#define WAIT_FLAGS __WALL</span><br><span class="line"></span><br><span class="line">static void loop(void)</span><br><span class="line">&#123;</span><br><span class="line">	int iter;</span><br><span class="line">	for (iter = 0;; iter++) &#123;</span><br><span class="line">		int pid = fork();</span><br><span class="line">		if (pid &lt; 0)</span><br><span class="line">	exit(1);</span><br><span class="line">		if (pid == 0) &#123;</span><br><span class="line">			setup_test();</span><br><span class="line">			execute_one();</span><br><span class="line">			exit(0);</span><br><span class="line">		&#125;</span><br><span class="line">		int status = 0;</span><br><span class="line">		uint64_t start = current_time_ms();</span><br><span class="line">		for (;;) &#123;</span><br><span class="line">			if (waitpid(-1, &amp;status, WNOHANG | WAIT_FLAGS) == pid)</span><br><span class="line">				break;</span><br><span class="line">			sleep_ms(1);</span><br><span class="line">			if (current_time_ms() - start &lt; 5 * 1000)</span><br><span class="line">				continue;</span><br><span class="line">			kill_and_wait(pid, &amp;status);</span><br><span class="line">			break;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t r[1] = &#123;0xffffffffffffffff&#125;;</span><br><span class="line"></span><br><span class="line">void execute_one(void)</span><br><span class="line">&#123;</span><br><span class="line">		intptr_t res = 0;</span><br><span class="line">	res = syz_open_dev(0xc, 4, 0x15 + procid*2);</span><br><span class="line">	if (res != -1)</span><br><span class="line">		r[0] = res;</span><br><span class="line">	syscall(__NR_ioctl, r[0], 0x5608, 0);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">		syscall(__NR_mmap, 0x20000000ul, 0x1000000ul, 3ul, 0x32ul, -1, 0ul);</span><br><span class="line">	for (procid = 0; procid &lt; 8; procid++) &#123;</span><br><span class="line">		if (fork() == 0) &#123;</span><br><span class="line">			loop();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(1000000);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>说真的syzkaller真的强大，还能自己生成poc，奈何poc太长，一时半会看不懂,可以从dump信息中看出是由于 <strong>vt_disallocate_all()</strong> 函数和 <strong>con_shutdown()</strong> 函数条件竞争导致的uaf,之前在我的文章 <strong>cve-2020-8627</strong> 已经分析过vt_disallocate_all()函数的调用流程了，这篇文章主要分析一下con_shutdown()函数，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static void vt_disallocate_all(void)</span><br><span class="line">&#123;</span><br><span class="line">	struct vc_data *vc[MAX_NR_CONSOLES];</span><br><span class="line">	int i;</span><br><span class="line"></span><br><span class="line">	console_lock();</span><br><span class="line">	for (i = 1; i &lt; MAX_NR_CONSOLES; i++)</span><br><span class="line">		if (!VT_BUSY(i))</span><br><span class="line">			vc[i] = vc_deallocate(i);</span><br><span class="line">		else</span><br><span class="line">			vc[i] = NULL;</span><br><span class="line">	console_unlock();</span><br><span class="line"></span><br><span class="line">	for (i = 1; i &lt; MAX_NR_CONSOLES; i++) &#123;</span><br><span class="line">		if (vc[i] &amp;&amp; i &gt;= MIN_NR_CONSOLES) &#123;</span><br><span class="line">			tty_port_destroy(&amp;vc[i]-&gt;port);</span><br><span class="line">			kfree(vc[i]);					&lt;--free here</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="0x00-con-shutdown（）函数"><a href="#0x00-con-shutdown（）函数" class="headerlink" title="0x00 con_shutdown（）函数"></a>0x00 con_shutdown（）函数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static void con_shutdown(struct tty_struct *tty)</span><br><span class="line">&#123;</span><br><span class="line">	struct vc_data *vc = tty-&gt;driver_data;</span><br><span class="line">	BUG_ON(vc == NULL);</span><br><span class="line">	console_lock();</span><br><span class="line">	vc-&gt;port.tty = NULL;  &lt;-- use here</span><br><span class="line">	console_unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从dump文件可以看出con_shutdown()函数，应该被release_tty()函数条用，release_tty（）又被tty_kclose()调用</p>
+<h2 id="0x01-竞争条件"><a href="#0x01-竞争条件" class="headerlink" title="0x01 竞争条件"></a>0x01 竞争条件</h2><p>条件竞争的情况就是在vc赋值之后，拿到锁之前，vt_disallocate_all()调用，拿到锁执行，把tty-&gt;driver_data释放掉，此时vc指向的是一个已经free过的指针，，之后，vt_disallocate_all()释放锁，con_shutdown（）拿到锁继续执行，之后的赋值操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vc-&gt;port.tty = NULL;</span><br></pre></td></tr></table></figure>
+<p>如果vc指向的内存又被分配，且内容可控的话，就可以实现任意地址写0的效果，但是，应该得用root权限。。。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kernel-fuzz/" rel="tag"># kernel,fuzz</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2020/03/13/CVE-2020-8647分析/" rel="next" title="CVE-2020-8647分析(转载于安全客)">
+                  <i class="fa fa-chevron-left"></i> CVE-2020-8647分析(转载于安全客)
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2020/03/26/cve-2019-9213/" rel="prev" title="cve-2019-9213">
+                  cve-2019-9213 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-环境搭建"><span class="nav-number">1.</span> <span class="nav-text">0x00 环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-编译syzkaller"><span class="nav-number">1.1.</span> <span class="nav-text">0x00 编译syzkaller</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-go-get-syzkaller"><span class="nav-number">1.1.1.</span> <span class="nav-text">0x00 go get syzkaller</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-生成镜像"><span class="nav-number">1.1.2.</span> <span class="nav-text">0x01 生成镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-编译kernel"><span class="nav-number">1.1.3.</span> <span class="nav-text">0x02 编译kernel</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-开始fuzz"><span class="nav-number">2.</span> <span class="nav-text">0x01 开始fuzz</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-漏洞分析"><span class="nav-number">3.</span> <span class="nav-text">0x02 漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-con-shutdown（）函数"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 con_shutdown（）函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-竞争条件"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 竞争条件</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: 'b715a3c7595647d4c6f1d058ce217a2c',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

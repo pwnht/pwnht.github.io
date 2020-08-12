@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="内核同步机制总结">
+<meta name="keywords" content="linux,kernel">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux内核同步机制总结">
+<meta property="og:url" content="http://yoursite.com/2019/12/06/linux内核同步机制总结/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="内核同步机制总结">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux内核同步机制总结">
+<meta name="twitter:description" content="内核同步机制总结">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/06/linux内核同步机制总结/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>linux内核同步机制总结 | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/06/linux内核同步机制总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux内核同步机制总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-06 16:06:39" itemprop="dateCreated datePublished" datetime="2019-12-06T16:06:39+08:00">2019-12-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">内核同步机制总结</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h1><p>学习内核，遇到最多的问题就是条件竞争，然后，再复杂一点的条件竞争就要利用到内核的同步机制，之前一直很迷，现在，总结一下。</p>
+<h1 id="0x01-条件竞争"><a href="#0x01-条件竞争" class="headerlink" title="0x01 条件竞争"></a>0x01 条件竞争</h1><p>对于用户态的程序一般不会有条件竞争的情况出现，因为，进程和进程之间总是独立的，都有自己独立的空间，用户态的程序在计算机系统层面一般扮演的是客户端的角色，而内核扮演的是服务端的角色，内核提供着多种服务，每一个用户态的进程都可以请求某一种的服务，而每一种服务，不可避免的需要声明一些全局变量来维持服务的正常运行，如果多个进程同时对某一全局变量进行直接或者间接的操作，就可能损坏全局变量，轻则服务崩溃，重则导致非预期程序流，内核提供了多种同步机制来解决条件竞争的问题</p>
+<h1 id="0x02-同步机制"><a href="#0x02-同步机制" class="headerlink" title="0x02  同步机制"></a>0x02  同步机制</h1><p>主要介绍以下几种内核同步机制：</p>
+<ul>
+<li>原子操作</li>
+<li>自旋锁</li>
+<li>互斥锁</li>
+<li>RCU</li>
+<li>读写锁</li>
+</ul>
+<h2 id="0x00-原子操作"><a href="#0x00-原子操作" class="headerlink" title="0x00 原子操作"></a>0x00 原子操作</h2><p>具体用法参考linux源码 <strong>linux-master/Documentation/atomic_t.txt</strong> 的详细描述</p>
+<p>具体实现在 <strong> </strong>linux-master/arch/architecture/include/asm/atomic.h** architecture为具体的架构，如x86</p>
+<p>（<del>Documentation这个目录真香，之前就知道这么里面有内核的描述，没想到这么详细</del>）</p>
+<p>我们一般对一个变量操作分这么几步：</p>
+<ul>
+<li>在内存中取出变量放到寄存器</li>
+<li>操作变量</li>
+<li>写回内存</li>
+</ul>
+<p>在这三步中间，中断的话，就可能出问题，所以，原子操作就是解决这种问题，保证完成之前这些步骤不被中断，（<del>形象点就是说把这三个步骤封装成一个步骤，原子操作不可再分</del>）</p>
+<p>列出常用的函数，还有一些没写。。。。</p>
+<blockquote>
+<p>atomic_read(atomic_t *v)  读取原子变量的值 </p>
+<p>atomic_set(atomic_t *v, int i)  将v设置为i </p>
+<p>atomic_add(int i, atomic_t *v)  将i加到v </p>
+<p>atomic_add_return(int i, atomic_t *v)  将i加到v，并返回结果 </p>
+<p>atomic_sub(int i, atomic_t *v)  从v减去i </p>
+<p>atomic_sub_return(int i, atomic_t *v)  从v减去i，并返回结果 </p>
+<p>atomic_sub_and_test(int i, atomic_t <em>v)  从v减去v。如果结果为0则返回true，否则返回false atomic_inc(atomic_t </em>v) 将v加1 </p>
+<p>atomic_inc_and_test(atomic_t *v) 将v加1。如果结果为0则返回true，否则返回false </p>
+<p>atomic_dec(atomic_t *v) 从v减去1 </p>
+<p>atomic_dec_and_test(atomic_t <em>v) 从v减去1。如果结果为0则返回true，否则返回false atomic_add_negative(int i, atomic_t </em>v) 将i加到v。如果结果小于0则返回true，否则返回false atomic_add_negative(int i, atomic_t *v) 将i加到v。如果结果为负则返回true，否则返回false </p>
+</blockquote>
+<h2 id="0x01-自旋锁"><a href="#0x01-自旋锁" class="headerlink" title="0x01 自旋锁"></a>0x01 自旋锁</h2><h3 id="0x00-临界区"><a href="#0x00-临界区" class="headerlink" title="0x00  临界区"></a>0x00  临界区</h3><p>说到锁，就不得不提 <strong>临界区</strong> 这个概念，就是说规划一段代码区域，在这段代码区域内，在同一时间内只允许一个进程运行这段代码（<del>可能不太准确，大概是这个意思</del>），其他进程会以各种方式阻挡在临界区之外，我个人理解临界区只是一个抽象化的概念，实际的实现，就是各种锁的机制，如果你细节的去想内核的各种同步机制，其实他们都是实现了临界区这个概念，包括原子操作，从而实现，在同一时间只有一个进程去操作同一变量</p>
+<h3 id="0x01-自旋锁的思想"><a href="#0x01-自旋锁的思想" class="headerlink" title="0x01 自旋锁的思想"></a>0x01 自旋锁的思想</h3><p>每个进程访问临界区时都要获取自旋锁，自旋锁只能由一个进程持有，当进程离开临界区的时候，就要释放自旋锁，如果，获得不到锁，此进程就会一直进行空操作</p>
+<p>具体参考：<strong>linux-master/Documentation/spinlocks.rst</strong></p>
+<h2 id="0x02-互斥锁"><a href="#0x02-互斥锁" class="headerlink" title="0x02 互斥锁"></a>0x02 互斥锁</h2><p>互斥锁是自旋锁的一个变种，只有一个能够持有锁，他和自旋锁的一个重要区别就是当一个进程进入临界区的时候，如果获取不到锁，就会把当前进程睡眠，所以，在临界区内可以中断的情况下，就不能选择自旋锁，最好选择互斥锁</p>
+<h2 id="0x03-RCU（Read-Copy-Update）"><a href="#0x03-RCU（Read-Copy-Update）" class="headerlink" title="0x03 RCU（Read-Copy Update）"></a>0x03 RCU（Read-Copy Update）</h2><p>这种机制的思想是可以有多个读者，但是，更新数据的时候，需要先复制一个副本，在副本上完成修改，在所有 进行读访问的使用者结束对旧副本的读取之后，指针可以替换为指向新的、修改后副本的指针，我们可以发现这种机制有写滞后效果，单单靠这一种同步机制，很难来避免条件竞争，有的时候反而给漏洞利用提供便利，由于这种同步机制在某些情况下优异的性能，这种机制在内核用的很广泛，这种机制主要用于对共享资源的访问在大部分时间应该是只读的，写访问应该相对很少的情况，接下来，主要介绍一下用法</p>
+<p><strong>rcu_read_lock()</strong> 函数标志着临界区的开始，<strong>rcu_read_unlock()</strong> 函数标志着临界区的结束，在临界区内不允许中断、睡眠，禁止和启用抢占，在临界区内不能直接访问一个指针，需要用到 <strong>rcu_dereference(ptr)</strong> 来获取一个受保护指针，修改一个受保护的指针也是不能直接修改的需要 <strong>rcu_assign_pointer(ptr,new_ptr)</strong> 函数来修改，那么什么时候写回到原来的指针呢，内核提供了两个函数 </p>
+<ul>
+<li><strong>synchronize_rcu()</strong> 等待所有现存的读访问完成，在该函数返回之后，释放原指针 ，更新指针为新指针</li>
+<li><strong>call_rcu()</strong> 可用于注册一个函数，在所有针对共享资源的读访问完成之后调用，执行释放和更新的操作</li>
+</ul>
+<h2 id="0x04-读写锁"><a href="#0x04-读写锁" class="headerlink" title="0x04 读写锁"></a>0x04 读写锁</h2><p>读写锁的理念是一个进程写的时候，其他进程不能读写，一个进程读的时候，允许其他进程读，但是不允许写 具体实现是在进入临界区的时候，会加相应的锁（<del>加锁的那一行代码标志临界区的开始。。。</del>），离开临界区时，会释放相应的锁（<del>释放锁的那一行代码标志临界区的结束</del>），但是理想很美好，现实很骨感，如果一个内核驱动，两处引用了同一全局变量，一处有读写锁，另一处没有，同样会引起条件竞争，只是，减少了发生的概率</p>
+<p>具体参考：<strong>linux-master/Documentation/spinlocks.rst</strong></p>
+<h1 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03 总结"></a>0x03 总结</h1><p>本来打算好好写写，但是，这周事情有点多，想写的东西有点大，弄巧成拙，写着写着发现没有什么新意（<del>而且还发现写不完2333</del>），只能作为一种总结，如有错误，还请联系我</p>
+<h2 id="0x00-关于锁和信号量-的区别"><a href="#0x00-关于锁和信号量-的区别" class="headerlink" title="0x00 关于锁和信号量 的区别"></a>0x00 关于锁和信号量 的区别</h2><p>我之前一直以为锁和信号量没有区别，其实，他们的思想不同，锁是锁住的资源（比如变量），而信号量同步的进程，信号量的是临界区内的进程数，而他并不能保护临界区内的变量，这个变量，如果在别的地方读写，仍然会发生条件竞争。。。。。</p>
+<p>参考资料:</p>
+<ul>
+<li>深入理解linux内核架构</li>
+<li><p>深入理解linux内核</p>
+</li>
+<li><p>原子操作：<a href="http://www.sohu.com/a/280833660_467784" target="_blank" rel="noopener">http://www.sohu.com/a/280833660_467784</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux-kernel/" rel="tag"># linux,kernel</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/12/04/ret2-dl-runtime-resolve/" rel="next" title="'ret2_dl_runtime_resolve'">
+                  <i class="fa fa-chevron-left"></i> 'ret2_dl_runtime_resolve'
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/12/10/pwntools源码分析/" rel="prev" title="'pwntools源码分析'">
+                  'pwntools源码分析' <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-条件竞争"><span class="nav-number">2.</span> <span class="nav-text">0x01 条件竞争</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-同步机制"><span class="nav-number">3.</span> <span class="nav-text">0x02  同步机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-原子操作"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 原子操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-自旋锁"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 自旋锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-临界区"><span class="nav-number">3.2.1.</span> <span class="nav-text">0x00  临界区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-自旋锁的思想"><span class="nav-number">3.2.2.</span> <span class="nav-text">0x01 自旋锁的思想</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-互斥锁"><span class="nav-number">3.3.</span> <span class="nav-text">0x02 互斥锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-RCU（Read-Copy-Update）"><span class="nav-number">3.4.</span> <span class="nav-text">0x03 RCU（Read-Copy Update）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-读写锁"><span class="nav-number">3.5.</span> <span class="nav-text">0x04 读写锁</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x03-总结"><span class="nav-number">4.</span> <span class="nav-text">0x03 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-关于锁和信号量-的区别"><span class="nav-number">4.1.</span> <span class="nav-text">0x00 关于锁和信号量 的区别</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: '55ac0359cb26480474a122942298221c',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

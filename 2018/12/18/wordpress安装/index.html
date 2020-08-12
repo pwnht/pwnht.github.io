@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="第一篇博客，就写一下wordpress的安装有关问题。昨天搭建到三点终于完美搭建完成。">
+<meta name="keywords" content="wordpress">
+<meta property="og:type" content="article">
+<meta property="og:title" content="wordpress安装">
+<meta property="og:url" content="http://yoursite.com/2018/12/18/wordpress安装/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="第一篇博客，就写一下wordpress的安装有关问题。昨天搭建到三点终于完美搭建完成。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="wordpress安装">
+<meta name="twitter:description" content="第一篇博客，就写一下wordpress的安装有关问题。昨天搭建到三点终于完美搭建完成。">
+
+<link rel="canonical" href="http://yoursite.com/2018/12/18/wordpress安装/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>wordpress安装 | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/18/wordpress安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          wordpress安装
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-18 21:59:44" itemprop="dateCreated datePublished" datetime="2018-12-18T21:59:44+08:00">2018-12-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">第一篇博客，就写一下wordpress的安装有关问题。昨天搭建到三点终于完美搭建完成。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#160;&#160;&#160;&#160;WordPress一般安装的vps上用于搭建网站或者博客，当然你也可以搭建本地，在本地搭建的话一般用于渗透，练习一些工具，比如wpscan等。好的，废话不多说，开始我们的wordpress搭建。WordPress是基于lamp或者lnmp环境的（一般vps都是Linux系统这个不讨论windows的安装，lamp是指Linux+Apache+Mysql+php，lnmp是Linux+Nginx+Mysql+php）。lamp和lnmp都有一键安装包，如果想简单一点，可自行百度lamp或者lnmp根据其他教程安装，一般会很顺利，如果遇到问题的话，就比较难解决，就需要了解lamp的机理，比如安装lamp的时候出现php和apache都安装成功了，mysql却安装失败了。这时，你可以多次尝试安装，还不成功的话，这种情况就有很多原因，其中的一个原因就可能是你的vps已有mysql。当然，你也可以尝试源码安装，这种方法比较麻烦，但是你可学到很多东西，比如Linux的make机制，以及Linux的依赖问题和耐心，这种方法还是可以学到很多东西的。</p>
+<p>&#160;&#160;&#160;&#160;首先，就是安装wordpress，可以参考官方的安装教程 <a href="https://codex.wordpress.org/Installing_WordPress" target="_blank" rel="noopener">https://codex.wordpress.org/Installing_WordPress</a>  附官方的一个连接。我推荐直接在shell中输入命令<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://wordpress.org/latest.tar.gz tar -xzvf latest.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>&#160;&#160;&#160;&#160;之后把wordpress目录放到网站的目录下，一般网站的目录为<strong>/var/www</strong><br>可以把wordpress的目录重命名为blog或者其他名字，在此以blog为例。最后就是在MySQL数据库中操作，参考官方文档，我推荐直接用mysql命令行。在这里重点说明的是这一步很可能失败，在执行下一步的时候php会连接数据库失败。请参考以下思路。     </p>
+<blockquote>
+<p>如果你能以root的身份进入msql命令行的话，说明你的MySQL没有问题。<br>此时你如果能以你新建的用户进入mysql命令的话，说明用户创建成功。我昨天做这个的时候卡了很长时间。如果你的用户进不去，可以尝试以root身份进入mysql命令行，改新建用户的密码。重新以新用户登陆MySQL命令行就会成功。</p>
+</blockquote>
+<p>mysql命令示例：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br><span class="line">Enter password:</span><br><span class="line">Welcome to the MySQL monitor. Commands end with ; or g. Your MySQL connection id is 5340 to server version: 3.23.54 Type 'help;' or 'h' for help. Type 'c' to clear the buffer.</span><br><span class="line"><span class="meta">mysql&gt;</span> CREATE DATABASE databasename;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"><span class="meta">mysql&gt;</span> GRANT ALL PRIVILEGES ON databasename.* TO "wordpressusername"@"hostname" IDENTIFIED BY "password";</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta">mysql&gt;</span> FLUSH PRIVILEGES;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)mysql EXIT;</span><br><span class="line">Bye</span><br></pre></td></tr></table></figure></p>
+<p>&#160;&#160;&#160;&#160;其中的hostname一般为localhost这个别忘了改了，如果没改就会出错。之后就是修改wp-config-sample.php为wp-config.php之后不再赘述设置好之后，在浏览器输入<strong>http://你的域名/bolg/wp-admin/wp-post.php</strong>进行设置。</p>
+<p>&#160;&#160;&#160;&#160;如果顺利的话，此时，wordpress已经安装完成了。接下来我们主要讲wordpress的优化.首先就是汉化了这里我参考的是 <a href="https://www.wpdaxue.com/wordpress-language-setting.html" target="_blank" rel="noopener">https://www.wpdaxue.com/wordpress-language-setting.html</a> 的方法。</p>
+<p>&#160;&#160;&#160;&#160;重点来了，你不需要下载语言包，你修改完wp-config.php后你只需要更新一下wordpress就可以了。更新选项在wordpress后台，仪表盘&gt;更新。此时，可能出现无法找到wordpress的路径。遇到这个问题，可以参考 <a href="https://blog.csdn.net/js_sunhao/article/details/46702945" target="_blank" rel="noopener">https://blog.csdn.net/js_sunhao/article/details/46702945</a> 添加代码之后，可能出现<strong>Could not create directory.</strong> 的情况。我首先是给bolg下所有目录777权限，然后参考 <a href="https://www.jb51.net/cms/113937.html" target="_blank" rel="noopener">https://www.jb51.net/cms/113937.html</a> 这篇文章说的很详细 最后，不要忘了把wordpress的目录的权限改成755，防止不正当配置，导致的安全问题。</p>
+<p>最后附上参考链接：<br><a href="https://codex.wordpress.org/Installing_WordPress" target="_blank" rel="noopener">https://codex.wordpress.org/Installing_WordPress</a><br><a href="https://www.wpdaxue.com/wordpress-language-setting.html" target="_blank" rel="noopener">https://www.wpdaxue.com/wordpress-language-setting.html</a><br><a href="https://blog.csdn.net/js_sunhao/article/details/46702945" target="_blank" rel="noopener">https://blog.csdn.net/js_sunhao/article/details/46702945</a><br><a href="https://www.jb51.net/cms/113937.html" target="_blank" rel="noopener">https://www.jb51.net/cms/113937.html</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/wordpress/" rel="tag"># wordpress</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2018/12/18/wordpress有关问题汇总/" rel="prev" title="wordpress有关问题汇总">
+                  wordpress有关问题汇总 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: '97d88693739925a5f274bda5836faa7b',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

